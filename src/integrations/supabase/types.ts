@@ -480,6 +480,39 @@ export type Database = {
           },
         ]
       }
+      ride_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          driver_id: string
+          id: string
+          rating: number
+          ride_id: string
+          rider_id: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          driver_id: string
+          id?: string
+          rating: number
+          ride_id: string
+          rider_id: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          driver_id?: string
+          id?: string
+          rating?: number
+          ride_id?: string
+          rider_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rides: {
         Row: {
           accepted_at: string | null
