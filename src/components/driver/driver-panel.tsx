@@ -192,7 +192,7 @@ function AvailableRides({
   onAccept,
   acceptingId,
 }: {
-  query: ReturnType<typeof useQuery<RideDTO[]>>;
+  query: { isLoading: boolean; data: RideDTO[] | undefined };
   onAccept: (id: string) => void;
   acceptingId: string | null;
 }) {
