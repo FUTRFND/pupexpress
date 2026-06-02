@@ -1,23 +1,49 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { Loader2, MapPin, Navigation } from "lucide-react";
 
 import { useMode } from "@/hooks/use-mode";
 import { listMyRides, type RideDTO } from "@/lib/rides.functions";
 import { listMyDriverRides } from "@/lib/driver.functions";
 import { rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
+import { formatCurrency } from "@/lib/format";
+import { PayRideButton } from "@/components/payments/pay-ride-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+interface TripsSearch {
+  payment?: "success" | "cancelled";
+  ride?: string;
+}
+
 export const Route = createFileRoute("/_authenticated/trips")({
+  validateSearch: (search: Record<string, unknown>): TripsSearch => ({
+    payment:
+      search.payment === "success" || search.payment === "cancelled"
+        ? search.payment
+        : undefined,
+    ride: typeof search.ride === "string" ? search.ride : undefined,
+  }),
   component: TripsPage,
 });
 
 function TripsPage() {
   const { mode } = useMode();
+  const search = useSearch({ from: "/_authenticated/trips" });
   const listRidesFn = useServerFn(listMyRides);
   const listDriverRidesFn = useServerFn(listMyDriverRides);
+
+  // Surface the outcome after returning from Stripe Checkout.
+  useEffect(() => {
+    if (search.payment === "success") {
+      toast.success("Payment received — thank you!");
+    } else if (search.payment === "cancelled") {
+      toast.info("Payment cancelled. You can pay anytime from Trips.");
+    }
+  }, [search.payment]);
 
   const riderQuery = useQuery({
     queryKey: ["rides"],
