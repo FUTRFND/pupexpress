@@ -82,6 +82,16 @@ function TripsPage() {
     enabled: mode === "driver",
   });
 
+  const ratingsFn = useServerFn(listMyRideRatings);
+  const ratingsQuery = useQuery({
+    queryKey: ["my-ride-ratings"],
+    queryFn: () => ratingsFn(),
+    enabled: mode === "rider",
+  });
+  const ratingByRide = new Map<string, RideRatingDTO>(
+    (ratingsQuery.data ?? []).map((r) => [r.ride_id, r]),
+  );
+
   const query = mode === "rider" ? riderQuery : driverQuery;
   const rides = query.data ?? [];
 
