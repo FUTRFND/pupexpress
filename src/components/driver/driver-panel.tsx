@@ -126,7 +126,9 @@ export function DriverPanel() {
 
   return (
     <div className="flex flex-col gap-4">
+      <DriverPayoutCard />
       <Card className="overflow-hidden">
+
         <CardContent className="flex items-center justify-between gap-3 py-4">
           <div className="flex items-center gap-3">
             <span
