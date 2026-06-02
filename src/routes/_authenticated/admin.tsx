@@ -203,10 +203,11 @@ function OverviewTab() {
 function DriversTab() {
   const fn = useServerFn(listAdminDrivers);
   const q = useQuery({ queryKey: ["admin-drivers"], queryFn: () => fn() });
+  const [search, setSearch] = useState("");
 
   if (q.isLoading) return <Loading label="Loading drivers…" />;
-  const drivers = q.data ?? [];
-  if (drivers.length === 0)
+  const all = q.data ?? [];
+  if (all.length === 0)
     return (
       <Card>
         <CardContent className="py-10 text-center text-sm text-muted-foreground">
@@ -215,31 +216,74 @@ function DriversTab() {
       </Card>
     );
 
+  const term = search.trim().toLowerCase();
+  const drivers = term
+    ? all.filter(
+        (d) =>
+          (d.fullName ?? "").toLowerCase().includes(term) ||
+          (d.email ?? "").toLowerCase().includes(term),
+      )
+    : all;
+
   return (
     <div className="flex flex-col gap-2">
-      {drivers.map((d) => (
-        <Card key={d.id}>
-          <CardContent className="flex items-center justify-between gap-3 py-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">
-                {d.fullName ?? "Unnamed driver"}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">{d.email}</p>
-            </div>
-            <div className="flex shrink-0 flex-col items-end gap-1">
-              <Badge variant={d.payoutsEnabled ? "default" : "outline"}>
-                {d.payoutsEnabled ? "Payouts on" : "No payouts"}
-              </Badge>
-              <span className="text-[10px] uppercase text-muted-foreground">
-                {d.onboardingStatus}
-              </span>
-            </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name or email"
+          className="pl-9"
+        />
+      </div>
+      {drivers.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-sm text-muted-foreground">
+            No drivers match "{search}".
           </CardContent>
         </Card>
-      ))}
+      ) : (
+        drivers.map((d) => (
+          <Card key={d.id}>
+            <CardContent className="flex items-center justify-between gap-3 py-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">
+                  {d.fullName ?? "Unnamed driver"}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {d.email}
+                </p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  {d.avgRating != null ? (
+                    <>
+                      <StarRating value={Math.round(d.avgRating)} size="sm" />
+                      <span className="text-xs text-muted-foreground">
+                        {d.avgRating.toFixed(1)} ({d.ratingCount})
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      No ratings yet
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <Badge variant={d.payoutsEnabled ? "default" : "outline"}>
+                  {d.payoutsEnabled ? "Payouts on" : "No payouts"}
+                </Badge>
+                <span className="text-[10px] uppercase text-muted-foreground">
+                  {d.onboardingStatus}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        ))
+      )}
     </div>
   );
 }
+
 
 function ApplicationsTab() {
   const queryClient = useQueryClient();
