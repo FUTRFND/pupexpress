@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useMode } from "@/hooks/use-mode";
+import { ProfileEditor } from "@/components/profile/profile-editor";
+import { PetManager } from "@/components/profile/pet-manager";
 import {
   Card,
   CardContent,
@@ -39,9 +41,7 @@ function ProfilePage() {
         <CardContent className="flex items-center gap-4 py-5">
           <Avatar className="h-14 w-14">
             <AvatarImage src={avatar} alt={name} />
-            <AvatarFallback>
-              {name.charAt(0).toUpperCase()}
-            </AvatarFallback>
+            <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
             <p className="truncate font-semibold">{name}</p>
@@ -51,6 +51,10 @@ function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      <ProfileEditor />
+
+      <PetManager />
 
       <Card>
         <CardHeader>
