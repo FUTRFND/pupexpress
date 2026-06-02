@@ -16,6 +16,7 @@ import { Route as AuthenticatedSafetyRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedPetCareGuidelinesRouteImport } from './routes/_authenticated/pet-care-guidelines'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedHowToUseRouteImport } from './routes/_authenticated/how-to-use'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
@@ -64,6 +65,12 @@ const AuthenticatedPetCareGuidelinesRoute =
   AuthenticatedPetCareGuidelinesRouteImport.update({
     id: '/pet-care-guidelines',
     path: '/pet-care-guidelines',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
@@ -153,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof AuthenticatedHomeRoute
   '/how-to-use': typeof AuthenticatedHowToUseRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/pet-care-guidelines': typeof AuthenticatedPetCareGuidelinesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -175,6 +183,7 @@ export interface FileRoutesByTo {
   '/home': typeof AuthenticatedHomeRoute
   '/how-to-use': typeof AuthenticatedHowToUseRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/pet-care-guidelines': typeof AuthenticatedPetCareGuidelinesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -199,6 +208,7 @@ export interface FileRoutesById {
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/how-to-use': typeof AuthenticatedHowToUseRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/pet-care-guidelines': typeof AuthenticatedPetCareGuidelinesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/how-to-use'
     | '/messages'
+    | '/notifications'
     | '/pet-care-guidelines'
     | '/pricing'
     | '/profile'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/how-to-use'
     | '/messages'
+    | '/notifications'
     | '/pet-care-guidelines'
     | '/pricing'
     | '/profile'
@@ -268,6 +280,7 @@ export interface FileRouteTypes {
     | '/_authenticated/home'
     | '/_authenticated/how-to-use'
     | '/_authenticated/messages'
+    | '/_authenticated/notifications'
     | '/_authenticated/pet-care-guidelines'
     | '/_authenticated/pricing'
     | '/_authenticated/profile'
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       path: '/pet-care-guidelines'
       fullPath: '/pet-care-guidelines'
       preLoaderRoute: typeof AuthenticatedPetCareGuidelinesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/messages': {
@@ -449,6 +469,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedHowToUseRoute: typeof AuthenticatedHowToUseRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPetCareGuidelinesRoute: typeof AuthenticatedPetCareGuidelinesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -470,6 +491,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedHowToUseRoute: AuthenticatedHowToUseRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPetCareGuidelinesRoute: AuthenticatedPetCareGuidelinesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
@@ -494,3 +516,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
