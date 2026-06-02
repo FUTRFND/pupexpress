@@ -18,6 +18,7 @@ import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/_authenticated/harassment-prevention'
+import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
 import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicStripeAuditRouteImport } from './routes/api/public/stripe-audit'
@@ -67,6 +68,11 @@ const AuthenticatedHarassmentPreventionRoute =
     path: '/harassment-prevention',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFaqRoute = AuthenticatedFaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedEmergencyRoute = AuthenticatedEmergencyRouteImport.update({
   id: '/emergency',
   path: '/emergency',
@@ -86,6 +92,7 @@ const ApiPublicStripeAuditRoute = ApiPublicStripeAuditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/emergency': typeof AuthenticatedEmergencyRoute
+  '/faq': typeof AuthenticatedFaqRoute
   '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/home': typeof AuthenticatedHomeRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/emergency': typeof AuthenticatedEmergencyRoute
+  '/faq': typeof AuthenticatedFaqRoute
   '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/home': typeof AuthenticatedHomeRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/emergency': typeof AuthenticatedEmergencyRoute
+  '/_authenticated/faq': typeof AuthenticatedFaqRoute
   '/_authenticated/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/emergency'
+    | '/faq'
     | '/harassment-prevention'
     | '/home'
     | '/messages'
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/emergency'
+    | '/faq'
     | '/harassment-prevention'
     | '/home'
     | '/messages'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/_authenticated/emergency'
+    | '/_authenticated/faq'
     | '/_authenticated/harassment-prevention'
     | '/_authenticated/home'
     | '/_authenticated/messages'
@@ -239,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHarassmentPreventionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/faq': {
+      id: '/_authenticated/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof AuthenticatedFaqRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/emergency': {
       id: '/_authenticated/emergency'
       path: '/emergency'
@@ -265,6 +284,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmergencyRoute: typeof AuthenticatedEmergencyRoute
+  AuthenticatedFaqRoute: typeof AuthenticatedFaqRoute
   AuthenticatedHarassmentPreventionRoute: typeof AuthenticatedHarassmentPreventionRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
@@ -276,6 +296,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmergencyRoute: AuthenticatedEmergencyRoute,
+  AuthenticatedFaqRoute: AuthenticatedFaqRoute,
   AuthenticatedHarassmentPreventionRoute:
     AuthenticatedHarassmentPreventionRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
