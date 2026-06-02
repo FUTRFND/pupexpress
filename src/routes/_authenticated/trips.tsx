@@ -127,7 +127,12 @@ function TripsPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {rides.map((ride) => (
-            <RideCard key={ride.id} ride={ride} mode={mode} />
+            <RideCard
+              key={ride.id}
+              ride={ride}
+              mode={mode}
+              rating={ratingByRide.get(ride.id)}
+            />
           ))}
         </div>
       )}
