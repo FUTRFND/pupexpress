@@ -17,6 +17,10 @@ import {
   getDriverEarnings,
 } from "@/lib/connect.functions";
 import { formatCurrency } from "@/lib/format";
+import {
+  StripeLiveModeBanner,
+  useStripeSafety,
+} from "@/components/payments/stripe-safety";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
