@@ -11,6 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/")({
+  // Body depends on client-only auth state (localStorage session); skip SSR for
+  // this route so the welcome/auth screen never produces a hydration mismatch.
+  ssr: false,
   head: () => ({
     meta: [
       { title: "PupXpress — Rides for your dog" },

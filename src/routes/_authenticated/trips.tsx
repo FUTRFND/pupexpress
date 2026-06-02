@@ -5,6 +5,8 @@ import { Loader2, MapPin, Navigation } from "lucide-react";
 
 import { useMode } from "@/hooks/use-mode";
 import { listMyRides, type RideDTO } from "@/lib/rides.functions";
+import { listMyDriverRides } from "@/lib/driver.functions";
+import { rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -12,58 +14,58 @@ export const Route = createFileRoute("/_authenticated/trips")({
   component: TripsPage,
 });
 
-const STATUS_LABELS: Record<string, string> = {
-  requested: "Requested",
-  accepted: "Accepted",
-  driver_en_route: "Driver en route",
-  in_progress: "In progress",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
-
-function statusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
-  if (status === "completed") return "default";
-  if (status === "cancelled") return "destructive";
-  if (status === "requested") return "secondary";
-  return "outline";
-}
-
 function TripsPage() {
   const { mode } = useMode();
   const listRidesFn = useServerFn(listMyRides);
+  const listDriverRidesFn = useServerFn(listMyDriverRides);
 
-  const ridesQuery = useQuery({
+  const riderQuery = useQuery({
     queryKey: ["rides"],
     queryFn: () => listRidesFn(),
+    enabled: mode === "rider",
   });
+
+  const driverQuery = useQuery({
+    queryKey: ["driver-assigned"],
+    queryFn: () => listDriverRidesFn(),
+    enabled: mode === "driver",
+  });
+
+  const query = mode === "rider" ? riderQuery : driverQuery;
+  const rides = query.data ?? [];
 
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-bold tracking-tight">Trips</h1>
+      <p className="-mt-2 text-sm text-muted-foreground">
+        {mode === "rider"
+          ? "Rides you've booked for your pets."
+          : "Rides you've accepted as a driver."}
+      </p>
 
-      {ridesQuery.isLoading ? (
+      {query.isLoading ? (
         <Card>
           <CardContent className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" /> Loading trips…
           </CardContent>
         </Card>
-      ) : ridesQuery.isError ? (
+      ) : query.isError ? (
         <Card>
           <CardContent className="py-10 text-center text-sm text-destructive">
             Couldn't load your trips. Pull to refresh or try again.
           </CardContent>
         </Card>
-      ) : (ridesQuery.data ?? []).length === 0 ? (
+      ) : rides.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
             {mode === "rider"
               ? "No rides yet. Book one from Home to get started."
-              : "Trips you've driven and earnings will appear here."}
+              : "No trips yet. Go online from Home to accept ride requests."}
           </CardContent>
         </Card>
       ) : (
         <div className="flex flex-col gap-3">
-          {(ridesQuery.data ?? []).map((ride) => (
+          {rides.map((ride) => (
             <RideCard key={ride.id} ride={ride} />
           ))}
         </div>
@@ -77,8 +79,8 @@ function RideCard({ ride }: { ride: RideDTO }) {
     <Card>
       <CardContent className="flex flex-col gap-3 py-4">
         <div className="flex items-center justify-between gap-2">
-          <Badge variant={statusVariant(ride.status)}>
-            {STATUS_LABELS[ride.status] ?? ride.status}
+          <Badge variant={rideStatusVariant(ride.status)}>
+            {rideStatusLabel(ride.status)}
           </Badge>
           <span className="text-xs text-muted-foreground">
             {new Date(ride.created_at).toLocaleString()}

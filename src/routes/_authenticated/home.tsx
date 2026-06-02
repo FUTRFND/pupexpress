@@ -13,6 +13,7 @@ import type { SelectedPlace } from "@/lib/maps-loader";
 import { PlaceAutocomplete } from "@/components/booking/place-autocomplete";
 import { RideMap } from "@/components/booking/ride-map";
 import { AddPetDialog } from "@/components/booking/add-pet-dialog";
+import { DriverPanel } from "@/components/driver/driver-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -38,24 +39,7 @@ function HomePage() {
         </p>
       </div>
 
-      {mode === "rider" ? (
-        <RiderBooking />
-      ) : (
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle>Go online to accept trips</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">
-              Driver availability, trip requests, and payouts arrive in the
-              driver phase.
-            </p>
-            <Button variant="secondary" className="h-11" disabled>
-              Go online (coming soon)
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {mode === "rider" ? <RiderBooking /> : <DriverPanel />}
     </div>
   );
 }

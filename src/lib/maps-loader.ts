@@ -5,7 +5,14 @@
  *
  * The key is ONLY authorized for the Maps JS API + Places API (New) browser
  * surfaces. Geocoding / Routes must go through a backend gateway call.
+ *
+ * NOTE: we intentionally type the Google SDK loosely (`GoogleMaps = any`) so
+ * the app builds in every environment without depending on `@types/google.maps`
+ * being resolvable by the SSR/worker typechecker.
  */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type GoogleMaps = any;
 
 const BROWSER_KEY = import.meta.env
   .VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
@@ -14,7 +21,7 @@ const TRACKING_ID = import.meta.env
 
 const CALLBACK_NAME = "__pupxpressInitMap";
 
-let loaderPromise: Promise<typeof google> | null = null;
+let loaderPromise: Promise<GoogleMaps> | null = null;
 
 export function isMapsConfigured(): boolean {
   return Boolean(BROWSER_KEY);
@@ -23,11 +30,11 @@ export function isMapsConfigured(): boolean {
 declare global {
   interface Window {
     [CALLBACK_NAME]?: () => void;
-    google?: typeof google;
+    google?: GoogleMaps;
   }
 }
 
-export function loadGoogleMaps(): Promise<typeof google> {
+export function loadGoogleMaps(): Promise<GoogleMaps> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Google Maps can only load in the browser"));
   }
@@ -43,7 +50,7 @@ export function loadGoogleMaps(): Promise<typeof google> {
   }
   if (loaderPromise) return loaderPromise;
 
-  loaderPromise = new Promise<typeof google>((resolve, reject) => {
+  loaderPromise = new Promise<GoogleMaps>((resolve, reject) => {
     window[CALLBACK_NAME] = () => {
       if (window.google?.maps) {
         resolve(window.google);
