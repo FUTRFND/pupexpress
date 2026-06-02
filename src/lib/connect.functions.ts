@@ -15,6 +15,54 @@ function resolveOrigin(): string {
   }
 }
 
+/** Detect whether the configured Stripe secret key is a test or live key. */
+function stripeMode(): "test" | "live" | "unknown" {
+  const key = process.env.STRIPE_SECRET_KEY ?? "";
+  if (key.startsWith("sk_test_") || key.startsWith("rk_test_")) return "test";
+  if (key.startsWith("sk_live_") || key.startsWith("rk_live_")) return "live";
+  return "unknown";
+}
+
+/**
+ * Normalize a Stripe SDK error into a structured payload, log the full detail
+ * server-side (so it surfaces in server-function logs), and return a single
+ * human-readable line containing every field Stripe Support asks for.
+ *
+ * Returning a clean string lets the caller `throw new Error(...)`, which the
+ * client mutation catches via `onError` and shows as a toast — instead of the
+ * raw Stripe error object bubbling up and blank-screening the app.
+ */
+function describeStripeError(err: unknown, endpoint: string): string {
+  const e = err as {
+    type?: string;
+    code?: string;
+    message?: string;
+    requestId?: string;
+    statusCode?: number;
+    raw?: { message?: string };
+  };
+  const payload = {
+    endpoint,
+    accountType: "express",
+    requestedCapabilities: ["transfers"],
+    mode: stripeMode(),
+    type: e?.type ?? null,
+    code: e?.code ?? null,
+    statusCode: e?.statusCode ?? null,
+    requestId: e?.requestId ?? null,
+    message: e?.message ?? e?.raw?.message ?? String(err),
+  };
+  // Full structured payload for server-function logs.
+  console.error("[stripe:connect] error", JSON.stringify(payload));
+
+  return (
+    `Stripe ${endpoint} failed — ` +
+    `type=${payload.type} code=${payload.code} status=${payload.statusCode} ` +
+    `requestId=${payload.requestId} mode=${payload.mode} ` +
+    `account=express capability=transfers — ${payload.message}`
+  );
+}
+
 export interface DriverPayoutStatus {
   hasAccount: boolean;
   onboardingStatus: string;
