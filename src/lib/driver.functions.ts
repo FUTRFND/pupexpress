@@ -105,7 +105,20 @@ export const acceptRide = createServerFn({ method: "POST" })
     if (!ride) {
       throw new Error("This ride was just taken by another driver.");
     }
-    return ride as RideDTO;
+
+    const accepted = ride as RideDTO;
+    const { createNotifications } = await import("./notifications.server");
+    await createNotifications([
+      {
+        user_id: accepted.rider_id,
+        title: "A driver accepted your ride",
+        body: "Your driver is getting ready. Track the ride and chat anytime.",
+        type: "ride",
+        ride_id: accepted.id,
+      },
+    ]);
+
+    return accepted;
   });
 
 type RideAction = "en_route" | "start" | "complete" | "cancel";
