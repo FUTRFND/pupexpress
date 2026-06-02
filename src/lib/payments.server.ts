@@ -144,6 +144,17 @@ export async function markPaymentFailed(rideId: string): Promise<void> {
  * guarantees a single transfer even under concurrent/duplicate webhooks.
  */
 export async function maybeCreateTransfer(rideId: string): Promise<void> {
+  // SAFETY: never move money to drivers in live mode unless launch mode is on.
+  // Skip gracefully (no throw) so the webhook acks 200 and does not retry-storm;
+  // the ride stays in `not_ready` and can transfer once safe mode is confirmed.
+  const safety = getStripeSafety();
+  if (!safety.actionsAllowed) {
+    console.warn(
+      `[stripe:safety] Transfer skipped for ride ${rideId}. ${safety.reason}`,
+    );
+    return;
+  }
+
   // Atomically claim the ride for transfer. All payout preconditions live in
   // this single WHERE clause.
   const { data: claimed, error: claimError } = await supabaseAdmin
