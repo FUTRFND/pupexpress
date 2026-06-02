@@ -48,19 +48,9 @@ export const getAdminStats = createServerFn({ method: "GET" })
       "@/integrations/supabase/client.server"
     );
 
-    const count = async (
-      table: string,
-      apply?: (
-        q: ReturnType<typeof supabaseAdmin.from>,
-      ) => unknown,
-    ): Promise<number> => {
-      let query = supabaseAdmin
-        .from(table)
-        .select("*", { count: "exact", head: true });
-      if (apply) query = apply(query) as typeof query;
-      const { count: c, error } = await query;
-      if (error) throw new Error(error.message);
-      return c ?? 0;
+    const unwrap = (res: { count: number | null; error: { message: string } | null }) => {
+      if (res.error) throw new Error(res.error.message);
+      return res.count ?? 0;
     };
 
     const [
@@ -70,20 +60,29 @@ export const getAdminStats = createServerFn({ method: "GET" })
       totalRides,
       completedRides,
     ] = await Promise.all([
-      count("profiles"),
-      count("profiles", (q) =>
-        (q as ReturnType<typeof supabaseAdmin.from>).in("role", [
-          "driver",
-          "both",
-        ]),
-      ),
-      count("driver_verifications", (q) =>
-        (q as ReturnType<typeof supabaseAdmin.from>).eq("status", "pending"),
-      ),
-      count("rides"),
-      count("rides", (q) =>
-        (q as ReturnType<typeof supabaseAdmin.from>).eq("status", "completed"),
-      ),
+      supabaseAdmin
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .then(unwrap),
+      supabaseAdmin
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .in("role", ["driver", "both"])
+        .then(unwrap),
+      supabaseAdmin
+        .from("driver_verifications")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending")
+        .then(unwrap),
+      supabaseAdmin
+        .from("rides")
+        .select("*", { count: "exact", head: true })
+        .then(unwrap),
+      supabaseAdmin
+        .from("rides")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "completed")
+        .then(unwrap),
     ]);
 
     const { data: paidRides, error: paidError } = await supabaseAdmin
