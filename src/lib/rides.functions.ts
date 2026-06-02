@@ -15,12 +15,17 @@ export interface RideDTO {
   destination_lat: number | null;
   destination_lng: number | null;
   pet_id: string | null;
+  rider_id: string;
+  driver_id: string | null;
   notes: string | null;
   created_at: string;
+  accepted_at: string | null;
+  started_at: string | null;
+  completed_at: string | null;
 }
 
-const RIDE_COLUMNS =
-  "id, status, payment_status, transfer_status, pickup_address, destination_address, pickup_lat, pickup_lng, destination_lat, destination_lng, pet_id, notes, created_at";
+export const RIDE_COLUMNS =
+  "id, status, payment_status, transfer_status, pickup_address, destination_address, pickup_lat, pickup_lng, destination_lat, destination_lng, pet_id, rider_id, driver_id, notes, created_at, accepted_at, started_at, completed_at";
 
 const locationSchema = z.object({
   address: z.string().trim().min(1, "Address is required").max(300),
@@ -68,16 +73,39 @@ export const createRide = createServerFn({ method: "POST" })
     return ride as RideDTO;
   });
 
-/** List rides for the signed-in rider, newest first. */
+/** List rides the signed-in user requested as a rider, newest first. */
 export const listMyRides = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<RideDTO[]> => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("rides")
       .select(RIDE_COLUMNS)
+      .eq("rider_id", userId)
       .order("created_at", { ascending: false });
 
     if (error) throw new Error(error.message);
     return (data ?? []) as RideDTO[];
+  });
+
+/** Cancel a ride the signed-in rider owns (only before it is in progress). */
+export const cancelMyRide = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ rideId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<RideDTO> => {
+    const { supabase, userId } = context;
+    const { data: ride, error } = await supabase
+      .from("rides")
+      .update({ status: "cancelled" })
+      .eq("id", data.rideId)
+      .eq("rider_id", userId)
+      .in("status", ["requested", "accepted", "driver_en_route"])
+      .select(RIDE_COLUMNS)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!ride) throw new Error("This ride can no longer be cancelled.");
+    return ride as RideDTO;
   });
