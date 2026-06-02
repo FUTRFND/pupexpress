@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import process from "node:process";
 
 import { getStripe } from "@/lib/stripe.server";
+import { getStripeSafety } from "@/lib/stripe-guard.server";
 
 /**
  * TEMPORARY diagnostic endpoint — Stripe runtime environment audit.
