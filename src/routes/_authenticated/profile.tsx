@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useMode } from "@/hooks/use-mode";
 import { ProfileEditor } from "@/components/profile/profile-editor";
 import { PetManager } from "@/components/profile/pet-manager";
+import { ProfileMenu } from "@/components/profile/profile-menu";
 import {
   Card,
   CardContent,
@@ -55,6 +56,10 @@ function ProfilePage() {
       <ProfileEditor />
 
       <PetManager />
+
+      <ProfileMenu />
+
+
 
       <Card>
         <CardHeader>

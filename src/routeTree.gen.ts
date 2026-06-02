@@ -12,9 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTripsRouteImport } from './routes/_authenticated/trips'
+import { Route as AuthenticatedSafetyRouteImport } from './routes/_authenticated/safety'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
+import { Route as AuthenticatedPetCareGuidelinesRouteImport } from './routes/_authenticated/pet-care-guidelines'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
+import { Route as AuthenticatedHowToUseRouteImport } from './routes/_authenticated/how-to-use'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/_authenticated/harassment-prevention'
+import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
+import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
+import { Route as AuthenticatedCommunityGuidelinesRouteImport } from './routes/_authenticated/community-guidelines'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicStripeAuditRouteImport } from './routes/api/public/stripe-audit'
 
@@ -32,14 +40,35 @@ const AuthenticatedTripsRoute = AuthenticatedTripsRouteImport.update({
   path: '/trips',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSafetyRoute = AuthenticatedSafetyRouteImport.update({
+  id: '/safety',
+  path: '/safety',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPetCareGuidelinesRoute =
+  AuthenticatedPetCareGuidelinesRouteImport.update({
+    id: '/pet-care-guidelines',
+    path: '/pet-care-guidelines',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHowToUseRoute = AuthenticatedHowToUseRouteImport.update({
+  id: '/how-to-use',
+  path: '/how-to-use',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
@@ -47,6 +76,28 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHarassmentPreventionRoute =
+  AuthenticatedHarassmentPreventionRouteImport.update({
+    id: '/harassment-prevention',
+    path: '/harassment-prevention',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFaqRoute = AuthenticatedFaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEmergencyRoute = AuthenticatedEmergencyRouteImport.update({
+  id: '/emergency',
+  path: '/emergency',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCommunityGuidelinesRoute =
+  AuthenticatedCommunityGuidelinesRouteImport.update({
+    id: '/community-guidelines',
+    path: '/community-guidelines',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe-webhook',
   path: '/api/public/stripe-webhook',
@@ -60,18 +111,34 @@ const ApiPublicStripeAuditRoute = ApiPublicStripeAuditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/community-guidelines': typeof AuthenticatedCommunityGuidelinesRoute
+  '/emergency': typeof AuthenticatedEmergencyRoute
+  '/faq': typeof AuthenticatedFaqRoute
+  '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/how-to-use': typeof AuthenticatedHowToUseRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/pet-care-guidelines': typeof AuthenticatedPetCareGuidelinesRoute
+  '/pricing': typeof AuthenticatedPricingRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/safety': typeof AuthenticatedSafetyRoute
   '/trips': typeof AuthenticatedTripsRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/community-guidelines': typeof AuthenticatedCommunityGuidelinesRoute
+  '/emergency': typeof AuthenticatedEmergencyRoute
+  '/faq': typeof AuthenticatedFaqRoute
+  '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/how-to-use': typeof AuthenticatedHowToUseRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/pet-care-guidelines': typeof AuthenticatedPetCareGuidelinesRoute
+  '/pricing': typeof AuthenticatedPricingRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/safety': typeof AuthenticatedSafetyRoute
   '/trips': typeof AuthenticatedTripsRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -80,9 +147,17 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/community-guidelines': typeof AuthenticatedCommunityGuidelinesRoute
+  '/_authenticated/emergency': typeof AuthenticatedEmergencyRoute
+  '/_authenticated/faq': typeof AuthenticatedFaqRoute
+  '/_authenticated/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/how-to-use': typeof AuthenticatedHowToUseRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
+  '/_authenticated/pet-care-guidelines': typeof AuthenticatedPetCareGuidelinesRoute
+  '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/safety': typeof AuthenticatedSafetyRoute
   '/_authenticated/trips': typeof AuthenticatedTripsRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -91,18 +166,34 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/community-guidelines'
+    | '/emergency'
+    | '/faq'
+    | '/harassment-prevention'
     | '/home'
+    | '/how-to-use'
     | '/messages'
+    | '/pet-care-guidelines'
+    | '/pricing'
     | '/profile'
+    | '/safety'
     | '/trips'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/community-guidelines'
+    | '/emergency'
+    | '/faq'
+    | '/harassment-prevention'
     | '/home'
+    | '/how-to-use'
     | '/messages'
+    | '/pet-care-guidelines'
+    | '/pricing'
     | '/profile'
+    | '/safety'
     | '/trips'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
@@ -110,9 +201,17 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_authenticated/community-guidelines'
+    | '/_authenticated/emergency'
+    | '/_authenticated/faq'
+    | '/_authenticated/harassment-prevention'
     | '/_authenticated/home'
+    | '/_authenticated/how-to-use'
     | '/_authenticated/messages'
+    | '/_authenticated/pet-care-guidelines'
+    | '/_authenticated/pricing'
     | '/_authenticated/profile'
+    | '/_authenticated/safety'
     | '/_authenticated/trips'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
@@ -148,11 +247,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTripsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/safety': {
+      id: '/_authenticated/safety'
+      path: '/safety'
+      fullPath: '/safety'
+      preLoaderRoute: typeof AuthenticatedSafetyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pricing': {
+      id: '/_authenticated/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof AuthenticatedPricingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pet-care-guidelines': {
+      id: '/_authenticated/pet-care-guidelines'
+      path: '/pet-care-guidelines'
+      fullPath: '/pet-care-guidelines'
+      preLoaderRoute: typeof AuthenticatedPetCareGuidelinesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/messages': {
@@ -162,11 +282,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMessagesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/how-to-use': {
+      id: '/_authenticated/how-to-use'
+      path: '/how-to-use'
+      fullPath: '/how-to-use'
+      preLoaderRoute: typeof AuthenticatedHowToUseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/harassment-prevention': {
+      id: '/_authenticated/harassment-prevention'
+      path: '/harassment-prevention'
+      fullPath: '/harassment-prevention'
+      preLoaderRoute: typeof AuthenticatedHarassmentPreventionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/faq': {
+      id: '/_authenticated/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof AuthenticatedFaqRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/emergency': {
+      id: '/_authenticated/emergency'
+      path: '/emergency'
+      fullPath: '/emergency'
+      preLoaderRoute: typeof AuthenticatedEmergencyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/community-guidelines': {
+      id: '/_authenticated/community-guidelines'
+      path: '/community-guidelines'
+      fullPath: '/community-guidelines'
+      preLoaderRoute: typeof AuthenticatedCommunityGuidelinesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/stripe-webhook': {
@@ -187,16 +342,33 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCommunityGuidelinesRoute: typeof AuthenticatedCommunityGuidelinesRoute
+  AuthenticatedEmergencyRoute: typeof AuthenticatedEmergencyRoute
+  AuthenticatedFaqRoute: typeof AuthenticatedFaqRoute
+  AuthenticatedHarassmentPreventionRoute: typeof AuthenticatedHarassmentPreventionRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedHowToUseRoute: typeof AuthenticatedHowToUseRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
+  AuthenticatedPetCareGuidelinesRoute: typeof AuthenticatedPetCareGuidelinesRoute
+  AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedSafetyRoute: typeof AuthenticatedSafetyRoute
   AuthenticatedTripsRoute: typeof AuthenticatedTripsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCommunityGuidelinesRoute: AuthenticatedCommunityGuidelinesRoute,
+  AuthenticatedEmergencyRoute: AuthenticatedEmergencyRoute,
+  AuthenticatedFaqRoute: AuthenticatedFaqRoute,
+  AuthenticatedHarassmentPreventionRoute:
+    AuthenticatedHarassmentPreventionRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedHowToUseRoute: AuthenticatedHowToUseRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
+  AuthenticatedPetCareGuidelinesRoute: AuthenticatedPetCareGuidelinesRoute,
+  AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedSafetyRoute: AuthenticatedSafetyRoute,
   AuthenticatedTripsRoute: AuthenticatedTripsRoute,
 }
 
@@ -212,13 +384,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
