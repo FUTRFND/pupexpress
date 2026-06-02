@@ -115,6 +115,31 @@ export const sendRideMessage = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw new Error(error.message);
+
+    // Notify the other participant (best-effort).
+    const { data: ride } = await supabase
+      .from("rides")
+      .select("rider_id, driver_id")
+      .eq("id", data.rideId)
+      .maybeSingle();
+    const recipient = ride
+      ? ride.rider_id === userId
+        ? ride.driver_id
+        : ride.rider_id
+      : null;
+    if (recipient) {
+      const { createNotifications } = await import("./notifications.server");
+      await createNotifications([
+        {
+          user_id: recipient,
+          title: "New message",
+          body: data.body.slice(0, 140),
+          type: "message",
+          ride_id: data.rideId,
+        },
+      ]);
+    }
+
     return row as MessageDTO;
   });
 
