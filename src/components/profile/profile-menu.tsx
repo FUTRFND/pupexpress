@@ -9,6 +9,7 @@ import {
   ListChecks,
   Dog,
   Mail,
+  Gift,
   ChevronRight,
 } from "lucide-react";
 
