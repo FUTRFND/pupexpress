@@ -57,6 +57,10 @@ function ProfilePage() {
 
       <PetManager />
 
+      <ProfileMenu />
+
+
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Mode</CardTitle>
