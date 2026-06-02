@@ -233,6 +233,17 @@ function RideCard({
 
         {canPay ? <PayRideButton rideId={ride.id} className="h-10" /> : null}
 
+        {mode === "rider" &&
+        ride.status === "completed" &&
+        Boolean(ride.driver_id) ? (
+          <RateRideDialog
+            rideId={ride.id}
+            existingRating={rating?.rating}
+            existingComment={rating?.comment}
+            className="h-10"
+          />
+        ) : null}
+
         {canCancel ? (
           <AlertDialog>
             <AlertDialogTrigger asChild>
