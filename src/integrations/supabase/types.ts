@@ -270,6 +270,7 @@ export type Database = {
           id: string
           phone: string | null
           profile_photo_url: string | null
+          referred_by_code: string | null
           role: Database["public"]["Enums"]["user_role"]
           stripe_connected_account_id: string | null
           stripe_customer_id: string | null
@@ -285,6 +286,7 @@ export type Database = {
           id: string
           phone?: string | null
           profile_photo_url?: string | null
+          referred_by_code?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           stripe_connected_account_id?: string | null
           stripe_customer_id?: string | null
@@ -300,12 +302,81 @@ export type Database = {
           id?: string
           phone?: string | null
           profile_photo_url?: string | null
+          referred_by_code?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           stripe_connected_account_id?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
         }
         Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          total_savings: number
+          total_uses: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          total_savings?: number
+          total_uses?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          total_savings?: number
+          total_uses?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_usage: {
+        Row: {
+          created_at: string
+          discount_amount: number
+          id: string
+          referral_code_id: string
+          ride_id: string | null
+          used_by_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          referral_code_id: string
+          ride_id?: string | null
+          used_by_user_id: string
+        }
+        Update: {
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          referral_code_id?: string
+          ride_id?: string | null
+          used_by_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_usage_referral_code_id_fkey"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "referral_codes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ride_locations: {
         Row: {
@@ -373,6 +444,7 @@ export type Database = {
           pickup_lng: number | null
           pickup_place_id: string | null
           platform_fee: number
+          referral_code: string | null
           ride_total: number
           rider_id: string
           started_at: string | null
@@ -403,6 +475,7 @@ export type Database = {
           pickup_lng?: number | null
           pickup_place_id?: string | null
           platform_fee?: number
+          referral_code?: string | null
           ride_total?: number
           rider_id: string
           started_at?: string | null
@@ -433,6 +506,7 @@ export type Database = {
           pickup_lng?: number | null
           pickup_place_id?: string | null
           platform_fee?: number
+          referral_code?: string | null
           ride_total?: number
           rider_id?: string
           started_at?: string | null
@@ -472,7 +546,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_referral_code: {
+        Args: never
+        Returns: {
+          code: string
+          total_savings: number
+          total_uses: number
+        }[]
+      }
+      get_referral_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          code: string
+          name: string
+          total_savings: number
+          total_uses: number
+        }[]
+      }
+      validate_referral_code: {
+        Args: { _code: string }
+        Returns: {
+          owner_name: string
+          reason: string
+          valid: boolean
+        }[]
+      }
     }
     Enums: {
       driver_onboarding_status:
