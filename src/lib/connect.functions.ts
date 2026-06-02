@@ -4,6 +4,7 @@ import process from "node:process";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getStripe, getFeeConfig } from "./stripe.server";
+import { assertStripeActionsAllowed } from "./stripe-guard.server";
 
 function resolveOrigin(): string {
   const origin = getRequestHeader("origin");
@@ -82,6 +83,9 @@ export interface OnboardingLink {
 export const createDriverOnboardingLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<OnboardingLink> => {
+    // SAFETY: never create connected accounts / onboarding links in live mode
+    // unless launch mode is explicitly enabled.
+    assertStripeActionsAllowed("Connect onboarding");
     const { supabase, userId } = context;
     const stripe = getStripe();
 

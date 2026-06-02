@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getStripe, computeFees, toMinorUnits } from "./stripe.server";
 import { ensureStripeCustomer, recordCheckoutPayment } from "./payments.server";
+import { assertStripeActionsAllowed } from "./stripe-guard.server";
 
 /** States in which a rider is allowed to start (or retry) payment. */
 const PAYABLE_PAYMENT_STATUSES = ["unpaid", "payment_failed"];
@@ -34,6 +35,8 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     z.object({ rideId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
+    // SAFETY: block live-mode checkout sessions unless launch mode is on.
+    assertStripeActionsAllowed("Checkout");
     const { supabase, userId } = context;
 
     const { data: ride, error } = await supabase

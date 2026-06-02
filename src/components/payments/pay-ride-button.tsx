@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CreditCard, Loader2 } from "lucide-react";
+import { CreditCard, Loader2, ShieldAlert } from "lucide-react";
 
 import { createRideCheckout } from "@/lib/payments.functions";
+import { useStripeSafety } from "@/components/payments/stripe-safety";
 import { Button } from "@/components/ui/button";
 
 /**
  * Pay Now button for a rider. Creates a Stripe Checkout Session server-side and
  * redirects the browser to Stripe's hosted checkout. No secret keys touch the
  * client — only the returned session URL.
+ *
+ * SAFETY: disabled whenever Stripe is not in a safe (test/launch) mode, so live
+ * checkout sessions cannot be triggered during development.
  */
 export function PayRideButton({
   rideId,
@@ -20,6 +24,8 @@ export function PayRideButton({
 }) {
   const [loading, setLoading] = useState(false);
   const checkoutFn = useServerFn(createRideCheckout);
+  const { data: safety } = useStripeSafety();
+  const blocked = safety ? !safety.actionsAllowed : false;
 
   const handlePay = async () => {
     setLoading(true);
@@ -33,6 +39,14 @@ export function PayRideButton({
       setLoading(false);
     }
   };
+
+  if (blocked) {
+    return (
+      <Button className={className} variant="outline" disabled>
+        <ShieldAlert className="size-4" /> Checkout disabled (test mode required)
+      </Button>
+    );
+  }
 
   return (
     <Button className={className} disabled={loading} onClick={handlePay}>

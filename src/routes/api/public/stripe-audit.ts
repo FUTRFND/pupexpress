@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import process from "node:process";
 
 import { getStripe } from "@/lib/stripe.server";
+import { getStripeSafety } from "@/lib/stripe-guard.server";
 
 /**
  * TEMPORARY diagnostic endpoint — Stripe runtime environment audit.
@@ -34,12 +35,24 @@ function mask(value: string | undefined): {
 export const Route = createFileRoute("/api/public/stripe-audit")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        // Optional admin token gate: if STRIPE_AUDIT_TOKEN is set, require a
+        // matching ?token= so account details aren't publicly exposed.
+        const requiredToken = process.env.STRIPE_AUDIT_TOKEN;
+        if (requiredToken) {
+          const url = new URL(request.url);
+          if (url.searchParams.get("token") !== requiredToken) {
+            return new Response("Unauthorized", { status: 401 });
+          }
+        }
+
         const secretKey = process.env.STRIPE_SECRET_KEY ?? "";
         const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET ?? "";
+        const safety = getStripeSafety();
 
         const report: Record<string, unknown> = {
           timestamp: new Date().toISOString(),
+          safety,
           env: {
             STRIPE_SECRET_KEY: mask(secretKey),
             STRIPE_WEBHOOK_SECRET: mask(webhookSecret),

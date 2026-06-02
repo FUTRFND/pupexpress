@@ -17,6 +17,10 @@ import {
   getDriverEarnings,
 } from "@/lib/connect.functions";
 import { formatCurrency } from "@/lib/format";
+import {
+  StripeLiveModeBanner,
+  useStripeSafety,
+} from "@/components/payments/stripe-safety";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +44,8 @@ export function DriverPayoutCard() {
   const refreshFn = useServerFn(refreshDriverPayoutStatus);
   const linkFn = useServerFn(createDriverOnboardingLink);
   const earningsFn = useServerFn(getDriverEarnings);
+  const { data: safety } = useStripeSafety();
+  const stripeBlocked = safety ? !safety.actionsAllowed : false;
 
   const statusQuery = useQuery({
     queryKey: ["driver-payout-status"],
@@ -117,6 +123,8 @@ export function DriverPayoutCard() {
         ) : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        <StripeLiveModeBanner />
+
         {statusQuery.isLoading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" /> Checking payout setup…
@@ -137,13 +145,15 @@ export function DriverPayoutCard() {
             </div>
             <Button
               className="h-10"
-              disabled={linkMutation.isPending}
+              disabled={linkMutation.isPending || stripeBlocked}
               onClick={() => linkMutation.mutate()}
             >
               {linkMutation.isPending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" /> Opening…
                 </>
+              ) : stripeBlocked ? (
+                "Payout setup disabled (test mode required)"
               ) : (
                 "Complete payout setup"
               )}
