@@ -17,6 +17,8 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/_authenticated/harassment-prevention'
+import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicStripeAuditRouteImport } from './routes/api/public/stripe-audit'
 
@@ -59,6 +61,17 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHarassmentPreventionRoute =
+  AuthenticatedHarassmentPreventionRouteImport.update({
+    id: '/harassment-prevention',
+    path: '/harassment-prevention',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEmergencyRoute = AuthenticatedEmergencyRouteImport.update({
+  id: '/emergency',
+  path: '/emergency',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe-webhook',
   path: '/api/public/stripe-webhook',
@@ -72,6 +85,8 @@ const ApiPublicStripeAuditRoute = ApiPublicStripeAuditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/emergency': typeof AuthenticatedEmergencyRoute
+  '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/home': typeof AuthenticatedHomeRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -83,6 +98,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/emergency': typeof AuthenticatedEmergencyRoute
+  '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/home': typeof AuthenticatedHomeRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -96,6 +113,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/emergency': typeof AuthenticatedEmergencyRoute
+  '/_authenticated/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
@@ -109,6 +128,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/emergency'
+    | '/harassment-prevention'
     | '/home'
     | '/messages'
     | '/pricing'
@@ -120,6 +141,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/emergency'
+    | '/harassment-prevention'
     | '/home'
     | '/messages'
     | '/pricing'
@@ -132,6 +155,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_authenticated/emergency'
+    | '/_authenticated/harassment-prevention'
     | '/_authenticated/home'
     | '/_authenticated/messages'
     | '/_authenticated/pricing'
@@ -207,6 +232,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/harassment-prevention': {
+      id: '/_authenticated/harassment-prevention'
+      path: '/harassment-prevention'
+      fullPath: '/harassment-prevention'
+      preLoaderRoute: typeof AuthenticatedHarassmentPreventionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/emergency': {
+      id: '/_authenticated/emergency'
+      path: '/emergency'
+      fullPath: '/emergency'
+      preLoaderRoute: typeof AuthenticatedEmergencyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/stripe-webhook': {
       id: '/api/public/stripe-webhook'
       path: '/api/public/stripe-webhook'
@@ -225,6 +264,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedEmergencyRoute: typeof AuthenticatedEmergencyRoute
+  AuthenticatedHarassmentPreventionRoute: typeof AuthenticatedHarassmentPreventionRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
@@ -234,6 +275,9 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedEmergencyRoute: AuthenticatedEmergencyRoute,
+  AuthenticatedHarassmentPreventionRoute:
+    AuthenticatedHarassmentPreventionRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
