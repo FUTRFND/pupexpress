@@ -136,6 +136,34 @@ export const getRideLatestLocation = createServerFn({ method: "GET" })
     return (row as RideLocationDTO) ?? null;
   });
 
+const locationPushSchema = z.object({
+  rideId: z.string().uuid(),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  heading: z.number().min(0).max(360).optional().nullable(),
+});
+
+/**
+ * Driver shares their current location for an active ride. RLS ensures only the
+ * assigned driver (driver_id = auth.uid()) can insert location points, so a
+ * rider can never spoof a driver's position.
+ */
+export const pushDriverLocation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => locationPushSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { supabase, userId } = context;
+    const { error } = await supabase.from("ride_locations").insert({
+      ride_id: data.rideId,
+      driver_id: userId,
+      lat: data.lat,
+      lng: data.lng,
+      heading: data.heading ?? null,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export interface ConversationDTO {
   rideId: string;
   status: string;
