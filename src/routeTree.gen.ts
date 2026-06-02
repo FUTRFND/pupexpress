@@ -16,6 +16,7 @@ import { Route as AuthenticatedSafetyRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
+import { Route as AuthenticatedHowToUseRouteImport } from './routes/_authenticated/how-to-use'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/_authenticated/harassment-prevention'
 import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
@@ -57,6 +58,11 @@ const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHowToUseRoute = AuthenticatedHowToUseRouteImport.update({
+  id: '/how-to-use',
+  path: '/how-to-use',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/faq': typeof AuthenticatedFaqRoute
   '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/how-to-use': typeof AuthenticatedHowToUseRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/faq': typeof AuthenticatedFaqRoute
   '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/how-to-use': typeof AuthenticatedHowToUseRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/_authenticated/faq': typeof AuthenticatedFaqRoute
   '/_authenticated/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/how-to-use': typeof AuthenticatedHowToUseRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/harassment-prevention'
     | '/home'
+    | '/how-to-use'
     | '/messages'
     | '/pricing'
     | '/profile'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/harassment-prevention'
     | '/home'
+    | '/how-to-use'
     | '/messages'
     | '/pricing'
     | '/profile'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '/_authenticated/faq'
     | '/_authenticated/harassment-prevention'
     | '/_authenticated/home'
+    | '/_authenticated/how-to-use'
     | '/_authenticated/messages'
     | '/_authenticated/pricing'
     | '/_authenticated/profile'
@@ -237,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMessagesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/how-to-use': {
+      id: '/_authenticated/how-to-use'
+      path: '/how-to-use'
+      fullPath: '/how-to-use'
+      preLoaderRoute: typeof AuthenticatedHowToUseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
@@ -287,6 +306,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFaqRoute: typeof AuthenticatedFaqRoute
   AuthenticatedHarassmentPreventionRoute: typeof AuthenticatedHarassmentPreventionRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedHowToUseRoute: typeof AuthenticatedHowToUseRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -300,6 +320,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHarassmentPreventionRoute:
     AuthenticatedHarassmentPreventionRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedHowToUseRoute: AuthenticatedHowToUseRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
