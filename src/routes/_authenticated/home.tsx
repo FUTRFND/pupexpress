@@ -134,6 +134,9 @@ function RiderBooking() {
           onSelect={setPetId}
         />
 
+        <PromoCodeInput onValidatedChange={setPromo} />
+
+
         <Button
           className="h-11"
           disabled={!canRequest}
