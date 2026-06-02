@@ -20,7 +20,9 @@ import {
   isActiveRide,
 } from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
+import { listMyRideRatings, type RideRatingDTO } from "@/lib/ratings.functions";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
+import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
 import { RideTimeline } from "@/components/trips/ride-timeline";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -80,6 +82,16 @@ function TripsPage() {
     enabled: mode === "driver",
   });
 
+  const ratingsFn = useServerFn(listMyRideRatings);
+  const ratingsQuery = useQuery({
+    queryKey: ["my-ride-ratings"],
+    queryFn: () => ratingsFn(),
+    enabled: mode === "rider",
+  });
+  const ratingByRide = new Map<string, RideRatingDTO>(
+    (ratingsQuery.data ?? []).map((r) => [r.ride_id, r]),
+  );
+
   const query = mode === "rider" ? riderQuery : driverQuery;
   const rides = query.data ?? [];
 
@@ -115,7 +127,12 @@ function TripsPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {rides.map((ride) => (
-            <RideCard key={ride.id} ride={ride} mode={mode} />
+            <RideCard
+              key={ride.id}
+              ride={ride}
+              mode={mode}
+              rating={ratingByRide.get(ride.id)}
+            />
           ))}
         </div>
       )}
@@ -126,7 +143,15 @@ function TripsPage() {
 const PAYABLE = ["unpaid", "payment_failed"];
 const CANCELLABLE = ["requested", "accepted", "driver_en_route"];
 
-function RideCard({ ride, mode }: { ride: RideDTO; mode: "rider" | "driver" }) {
+function RideCard({
+  ride,
+  mode,
+  rating,
+}: {
+  ride: RideDTO;
+  mode: "rider" | "driver";
+  rating?: RideRatingDTO;
+}) {
   const queryClient = useQueryClient();
   const cancelFn = useServerFn(cancelMyRide);
   const currency = "usd";
@@ -207,6 +232,17 @@ function RideCard({ ride, mode }: { ride: RideDTO; mode: "rider" | "driver" }) {
         </Button>
 
         {canPay ? <PayRideButton rideId={ride.id} className="h-10" /> : null}
+
+        {mode === "rider" &&
+        ride.status === "completed" &&
+        Boolean(ride.driver_id) ? (
+          <RateRideDialog
+            rideId={ride.id}
+            existingRating={rating?.rating}
+            existingComment={rating?.comment}
+            className="h-10"
+          />
+        ) : null}
 
         {canCancel ? (
           <AlertDialog>

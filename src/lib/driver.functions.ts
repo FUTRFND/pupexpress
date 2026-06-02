@@ -105,7 +105,20 @@ export const acceptRide = createServerFn({ method: "POST" })
     if (!ride) {
       throw new Error("This ride was just taken by another driver.");
     }
-    return ride as RideDTO;
+
+    const accepted = ride as RideDTO;
+    const { createNotifications } = await import("./notifications.server");
+    await createNotifications([
+      {
+        user_id: accepted.rider_id,
+        title: "A driver accepted your ride",
+        body: "Your driver is getting ready. Track the ride and chat anytime.",
+        type: "ride",
+        ride_id: accepted.id,
+      },
+    ]);
+
+    return accepted;
   });
 
 type RideAction = "en_route" | "start" | "complete" | "cancel";
@@ -170,5 +183,37 @@ export const advanceRide = createServerFn({ method: "POST" })
     if (!ride) {
       throw new Error("That ride is no longer in a state you can update.");
     }
-    return ride as RideDTO;
+
+    const updated = ride as RideDTO;
+    const messages: Record<RideAction, { title: string; body: string }> = {
+      en_route: {
+        title: "Your driver is en route",
+        body: "Your driver is on the way to the pickup location.",
+      },
+      start: {
+        title: "Your ride has started",
+        body: "Your pet is on the way to the destination.",
+      },
+      complete: {
+        title: "Ride completed",
+        body: "Hope it went great! Tap to rate your driver.",
+      },
+      cancel: {
+        title: "Ride cancelled",
+        body: "Your driver cancelled this ride. You can book again anytime.",
+      },
+    };
+    const note = messages[data.action as RideAction];
+    const { createNotifications } = await import("./notifications.server");
+    await createNotifications([
+      {
+        user_id: updated.rider_id,
+        title: note.title,
+        body: note.body,
+        type: "ride",
+        ride_id: updated.id,
+      },
+    ]);
+
+    return updated;
   });

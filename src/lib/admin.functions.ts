@@ -119,6 +119,8 @@ export interface AdminDriver {
   onboardingStatus: string;
   payoutsEnabled: boolean;
   createdAt: string;
+  avgRating: number | null;
+  ratingCount: number;
 }
 
 export const listAdminDrivers = createServerFn({ method: "GET" })
@@ -138,15 +140,33 @@ export const listAdminDrivers = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
-    return (data ?? []).map((p) => ({
-      id: p.id,
-      fullName: p.full_name,
-      email: p.email,
-      role: p.role,
-      onboardingStatus: p.driver_onboarding_status,
-      payoutsEnabled: Boolean(p.driver_payouts_enabled),
-      createdAt: p.created_at,
-    }));
+    const { data: ratings, error: ratingErr } = await supabaseAdmin
+      .from("ride_ratings")
+      .select("driver_id, rating");
+    if (ratingErr) throw new Error(ratingErr.message);
+
+    const agg = new Map<string, { sum: number; count: number }>();
+    for (const r of ratings ?? []) {
+      const cur = agg.get(r.driver_id) ?? { sum: 0, count: 0 };
+      cur.sum += Number(r.rating ?? 0);
+      cur.count += 1;
+      agg.set(r.driver_id, cur);
+    }
+
+    return (data ?? []).map((p) => {
+      const a = agg.get(p.id);
+      return {
+        id: p.id,
+        fullName: p.full_name,
+        email: p.email,
+        role: p.role,
+        onboardingStatus: p.driver_onboarding_status,
+        payoutsEnabled: Boolean(p.driver_payouts_enabled),
+        createdAt: p.created_at,
+        avgRating: a ? Math.round((a.sum / a.count) * 10) / 10 : null,
+        ratingCount: a?.count ?? 0,
+      };
+    });
   });
 
 export interface AdminApplication {
@@ -286,10 +306,28 @@ export const reviewDriverApplication = createServerFn({ method: "POST" })
         updated_at: new Date().toISOString(),
       })
       .eq("id", data.verificationId)
-      .select("status")
+      .select("status, user_id")
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!updated) throw new Error("Application not found.");
+
+    const { createNotifications } = await import("./notifications.server");
+    await createNotifications([
+      {
+        user_id: updated.user_id,
+        title:
+          data.decision === "approve"
+            ? "You're approved to drive! 🎉"
+            : "Driver application update",
+        body:
+          data.decision === "approve"
+            ? "Your driver application was approved. Set up payouts to start accepting rides."
+            : data.notes?.trim()
+              ? data.notes.trim()
+              : "Your driver application wasn't approved this time.",
+        type: "driver",
+      },
+    ]);
 
     return { status: updated.status };
   });
