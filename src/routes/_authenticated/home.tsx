@@ -54,6 +54,7 @@ function RiderBooking() {
   const [pickup, setPickup] = useState<SelectedPlace | null>(null);
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [petId, setPetId] = useState<string | null>(null);
+  const [promo, setPromo] = useState<PromoState | null>(null);
 
   const petsQuery = useQuery({
     queryKey: ["pets"],
