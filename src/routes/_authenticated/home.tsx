@@ -13,6 +13,7 @@ import type { SelectedPlace } from "@/lib/maps-loader";
 import { PlaceAutocomplete } from "@/components/booking/place-autocomplete";
 import { RideMap } from "@/components/booking/ride-map";
 import { AddPetDialog } from "@/components/booking/add-pet-dialog";
+import { PromoCodeInput, type PromoState } from "@/components/booking/promo-code-input";
 import { DriverPanel } from "@/components/driver/driver-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
