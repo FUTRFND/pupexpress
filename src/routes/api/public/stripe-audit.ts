@@ -52,8 +52,9 @@ export const Route = createFileRoute("/api/public/stripe-audit")({
         try {
           const stripe = getStripe();
 
+          // No-arg retrieve returns the account tied to the active API key.
           const [account, balance] = await Promise.all([
-            stripe.accounts.retrieve(),
+            stripe.accounts.retrieve(undefined as unknown as string),
             stripe.balance.retrieve(),
           ]);
 
