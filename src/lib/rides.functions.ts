@@ -18,14 +18,19 @@ export interface RideDTO {
   rider_id: string;
   driver_id: string | null;
   notes: string | null;
+  ride_total: number;
+  platform_fee: number;
+  driver_earnings: number;
   created_at: string;
   accepted_at: string | null;
   started_at: string | null;
   completed_at: string | null;
+  paid_at: string | null;
+  transferred_at: string | null;
 }
 
 export const RIDE_COLUMNS =
-  "id, status, payment_status, transfer_status, pickup_address, destination_address, pickup_lat, pickup_lng, destination_lat, destination_lng, pet_id, rider_id, driver_id, notes, created_at, accepted_at, started_at, completed_at";
+  "id, status, payment_status, transfer_status, pickup_address, destination_address, pickup_lat, pickup_lng, destination_lat, destination_lng, pet_id, rider_id, driver_id, notes, ride_total, platform_fee, driver_earnings, created_at, accepted_at, started_at, completed_at, paid_at, transferred_at";
 
 const locationSchema = z.object({
   address: z.string().trim().min(1, "Address is required").max(300),

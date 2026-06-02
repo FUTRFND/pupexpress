@@ -24,6 +24,7 @@ import { isActiveRide, rideStatusLabel } from "@/lib/ride-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DriverPayoutCard } from "@/components/driver/payout-card";
 
 const POLL_MS = 5000;
 
@@ -125,7 +126,9 @@ export function DriverPanel() {
 
   return (
     <div className="flex flex-col gap-4">
+      <DriverPayoutCard />
       <Card className="overflow-hidden">
+
         <CardContent className="flex items-center justify-between gap-3 py-4">
           <div className="flex items-center gap-3">
             <span
