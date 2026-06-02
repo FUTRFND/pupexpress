@@ -143,7 +143,15 @@ function TripsPage() {
 const PAYABLE = ["unpaid", "payment_failed"];
 const CANCELLABLE = ["requested", "accepted", "driver_en_route"];
 
-function RideCard({ ride, mode }: { ride: RideDTO; mode: "rider" | "driver" }) {
+function RideCard({
+  ride,
+  mode,
+  rating,
+}: {
+  ride: RideDTO;
+  mode: "rider" | "driver";
+  rating?: RideRatingDTO;
+}) {
   const queryClient = useQueryClient();
   const cancelFn = useServerFn(cancelMyRide);
   const currency = "usd";
