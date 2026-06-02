@@ -4,6 +4,7 @@ import process from "node:process";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getStripe, getFeeConfig } from "./stripe.server";
+import { assertStripeActionsAllowed } from "./stripe-guard.server";
 
 function resolveOrigin(): string {
   const origin = getRequestHeader("origin");
