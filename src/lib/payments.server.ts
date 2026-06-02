@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getStripe, computeFees, toMinorUnits, getFeeConfig } from "./stripe.server";
+import { getStripeSafety } from "./stripe-guard.server";
 
 /**
  * Get (or lazily create) the Stripe customer for a rider and persist its id.
