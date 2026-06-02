@@ -24,6 +24,7 @@ import { isActiveRide, rideStatusLabel } from "@/lib/ride-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DriverPayoutCard } from "@/components/driver/payout-card";
 
 const POLL_MS = 5000;
 
