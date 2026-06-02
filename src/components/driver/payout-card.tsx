@@ -44,6 +44,8 @@ export function DriverPayoutCard() {
   const refreshFn = useServerFn(refreshDriverPayoutStatus);
   const linkFn = useServerFn(createDriverOnboardingLink);
   const earningsFn = useServerFn(getDriverEarnings);
+  const { data: safety } = useStripeSafety();
+  const stripeBlocked = safety ? !safety.actionsAllowed : false;
 
   const statusQuery = useQuery({
     queryKey: ["driver-payout-status"],
