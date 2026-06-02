@@ -95,16 +95,21 @@ export const createDriverOnboardingLink = createServerFn({ method: "POST" })
     let accountId = profile?.stripe_connected_account_id ?? null;
 
     if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: "express",
-        country: process.env.STRIPE_CONNECT_COUNTRY ?? "US",
-        email: profile?.email ?? undefined,
-        business_type: "individual",
-        capabilities: {
-          transfers: { requested: true },
-        },
-        metadata: { driver_id: userId },
-      });
+      let account;
+      try {
+        account = await stripe.accounts.create({
+          type: "express",
+          country: process.env.STRIPE_CONNECT_COUNTRY ?? "US",
+          email: profile?.email ?? undefined,
+          business_type: "individual",
+          capabilities: {
+            transfers: { requested: true },
+          },
+          metadata: { driver_id: userId },
+        });
+      } catch (err) {
+        throw new Error(describeStripeError(err, "accounts.create"));
+      }
       accountId = account.id;
 
       const { error: updateError } = await supabase
@@ -118,12 +123,17 @@ export const createDriverOnboardingLink = createServerFn({ method: "POST" })
     }
 
     const origin = resolveOrigin();
-    const link = await stripe.accountLinks.create({
-      account: accountId,
-      refresh_url: `${origin}/profile?connect=refresh`,
-      return_url: `${origin}/profile?connect=return`,
-      type: "account_onboarding",
-    });
+    let link;
+    try {
+      link = await stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: `${origin}/profile?connect=refresh`,
+        return_url: `${origin}/profile?connect=return`,
+        type: "account_onboarding",
+      });
+    } catch (err) {
+      throw new Error(describeStripeError(err, "accountLinks.create"));
+    }
 
     return { url: link.url };
   });
