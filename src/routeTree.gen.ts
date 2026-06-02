@@ -21,6 +21,7 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/_authenticated/harassment-prevention'
 import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
 import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
+import { Route as AuthenticatedCommunityGuidelinesRouteImport } from './routes/_authenticated/community-guidelines'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicStripeAuditRouteImport } from './routes/api/public/stripe-audit'
 
@@ -84,6 +85,12 @@ const AuthenticatedEmergencyRoute = AuthenticatedEmergencyRouteImport.update({
   path: '/emergency',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCommunityGuidelinesRoute =
+  AuthenticatedCommunityGuidelinesRouteImport.update({
+    id: '/community-guidelines',
+    path: '/community-guidelines',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe-webhook',
   path: '/api/public/stripe-webhook',
@@ -97,6 +104,7 @@ const ApiPublicStripeAuditRoute = ApiPublicStripeAuditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/community-guidelines': typeof AuthenticatedCommunityGuidelinesRoute
   '/emergency': typeof AuthenticatedEmergencyRoute
   '/faq': typeof AuthenticatedFaqRoute
   '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
@@ -112,6 +120,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/community-guidelines': typeof AuthenticatedCommunityGuidelinesRoute
   '/emergency': typeof AuthenticatedEmergencyRoute
   '/faq': typeof AuthenticatedFaqRoute
   '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
@@ -129,6 +138,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/community-guidelines': typeof AuthenticatedCommunityGuidelinesRoute
   '/_authenticated/emergency': typeof AuthenticatedEmergencyRoute
   '/_authenticated/faq': typeof AuthenticatedFaqRoute
   '/_authenticated/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/community-guidelines'
     | '/emergency'
     | '/faq'
     | '/harassment-prevention'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/community-guidelines'
     | '/emergency'
     | '/faq'
     | '/harassment-prevention'
@@ -177,6 +189,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_authenticated/community-guidelines'
     | '/_authenticated/emergency'
     | '/_authenticated/faq'
     | '/_authenticated/harassment-prevention'
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmergencyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/community-guidelines': {
+      id: '/_authenticated/community-guidelines'
+      path: '/community-guidelines'
+      fullPath: '/community-guidelines'
+      preLoaderRoute: typeof AuthenticatedCommunityGuidelinesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/stripe-webhook': {
       id: '/api/public/stripe-webhook'
       path: '/api/public/stripe-webhook'
@@ -302,6 +322,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCommunityGuidelinesRoute: typeof AuthenticatedCommunityGuidelinesRoute
   AuthenticatedEmergencyRoute: typeof AuthenticatedEmergencyRoute
   AuthenticatedFaqRoute: typeof AuthenticatedFaqRoute
   AuthenticatedHarassmentPreventionRoute: typeof AuthenticatedHarassmentPreventionRoute
@@ -315,6 +336,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCommunityGuidelinesRoute: AuthenticatedCommunityGuidelinesRoute,
   AuthenticatedEmergencyRoute: AuthenticatedEmergencyRoute,
   AuthenticatedFaqRoute: AuthenticatedFaqRoute,
   AuthenticatedHarassmentPreventionRoute:
