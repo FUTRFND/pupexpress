@@ -2,6 +2,65 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getStripe, computeFees, toMinorUnits, getFeeConfig } from "./stripe.server";
 
 /**
+ * Get (or lazily create) the Stripe customer for a rider and persist its id.
+ * Returns the customer id. Server-only; uses the admin client.
+ */
+export async function ensureStripeCustomer(opts: {
+  riderId: string;
+  email: string | null;
+  name: string | null;
+}): Promise<string> {
+  const { data: profile, error } = await supabaseAdmin
+    .from("profiles")
+    .select("stripe_customer_id")
+    .eq("id", opts.riderId)
+    .single();
+  if (error) throw new Error(error.message);
+
+  if (profile?.stripe_customer_id) return profile.stripe_customer_id;
+
+  const stripe = getStripe();
+  const customer = await stripe.customers.create({
+    email: opts.email ?? undefined,
+    name: opts.name ?? undefined,
+    metadata: { rider_id: opts.riderId },
+  });
+
+  await supabaseAdmin
+    .from("profiles")
+    .update({ stripe_customer_id: customer.id })
+    .eq("id", opts.riderId);
+
+  return customer.id;
+}
+
+/** Upsert the payments ledger row when a checkout session is created. */
+export async function recordCheckoutPayment(opts: {
+  rideId: string;
+  riderId: string;
+  amount: number;
+  platformFee: number;
+  currency: string;
+  sessionId: string;
+}): Promise<void> {
+  const { error } = await supabaseAdmin.from("payments").upsert(
+    {
+      ride_id: opts.rideId,
+      rider_id: opts.riderId,
+      amount: opts.amount,
+      platform_fee: opts.platformFee,
+      currency: opts.currency,
+      status: "payment_pending",
+      stripe_checkout_session_id: opts.sessionId,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "ride_id" },
+  );
+  if (error) throw new Error(error.message);
+}
+
+
+/**
  * Server-only payment + payout engine. Uses the service-role client
  * (RLS-bypassing) and is reachable ONLY from server functions and the
  * verified webhook route — never from client code (`.server.ts` is
