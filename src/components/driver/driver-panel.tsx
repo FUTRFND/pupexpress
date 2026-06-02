@@ -297,10 +297,15 @@ function ActiveRideCard({
           )}
         </div>
 
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Car className="size-3.5" /> Live driver location syncing arrives with
-          the maps phase.
-        </p>
+        {isActiveRide(ride.status) ? (
+          <DriverLocationSharer rideId={ride.id} />
+        ) : null}
+
+        <Button asChild variant="outline" className="h-10">
+          <Link to="/rides/$rideId" params={{ rideId: ride.id }}>
+            <MessageCircle className="size-4" /> Track & chat with rider
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );
