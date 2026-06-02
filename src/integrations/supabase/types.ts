@@ -65,6 +65,63 @@ export type Database = {
           },
         ]
       }
+      driver_verifications: {
+        Row: {
+          created_at: string
+          driver_photo_url: string | null
+          drivers_license_url: string | null
+          id: string
+          insurance_url: string | null
+          license_plate: string | null
+          notes: string | null
+          status: Database["public"]["Enums"]["driver_verification_status"]
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+          vehicle_color: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_photo_url: string | null
+          vehicle_year: number | null
+        }
+        Insert: {
+          created_at?: string
+          driver_photo_url?: string | null
+          drivers_license_url?: string | null
+          id?: string
+          insurance_url?: string | null
+          license_plate?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["driver_verification_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+          vehicle_color?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_photo_url?: string | null
+          vehicle_year?: number | null
+        }
+        Update: {
+          created_at?: string
+          driver_photo_url?: string | null
+          drivers_license_url?: string | null
+          id?: string
+          insurance_url?: string | null
+          license_plate?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["driver_verification_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+          vehicle_color?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_photo_url?: string | null
+          vehicle_year?: number | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           body: string
@@ -578,6 +635,11 @@ export type Database = {
         | "pending"
         | "restricted"
         | "complete"
+      driver_verification_status:
+        | "not_started"
+        | "pending"
+        | "approved"
+        | "rejected"
       payment_status:
         | "unpaid"
         | "payment_pending"
@@ -730,6 +792,12 @@ export const Constants = {
         "pending",
         "restricted",
         "complete",
+      ],
+      driver_verification_status: [
+        "not_started",
+        "pending",
+        "approved",
+        "rejected",
       ],
       payment_status: [
         "unpaid",

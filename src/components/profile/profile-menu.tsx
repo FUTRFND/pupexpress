@@ -10,6 +10,7 @@ import {
   Dog,
   Mail,
   Gift,
+  Car,
   ChevronRight,
 } from "lucide-react";
 
@@ -24,6 +25,12 @@ type MenuItem = {
 } & ({ to: string } | { href: string });
 
 const ITEMS: MenuItem[] = [
+  {
+    icon: Car,
+    label: "Become a Driver",
+    subtitle: "Submit documents & set up payouts",
+    to: "/driver/verify",
+  },
   {
     icon: Gift,
     label: "Refer & Earn",

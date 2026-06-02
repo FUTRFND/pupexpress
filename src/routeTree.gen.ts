@@ -27,6 +27,7 @@ import { Route as AuthenticatedReferralsIndexRouteImport } from './routes/_authe
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicStripeAuditRouteImport } from './routes/api/public/stripe-audit'
 import { Route as AuthenticatedReferralsLeaderboardRouteImport } from './routes/_authenticated/referrals.leaderboard'
+import { Route as AuthenticatedDriverVerifyRouteImport } from './routes/_authenticated/driver.verify'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -122,6 +123,12 @@ const AuthenticatedReferralsLeaderboardRoute =
     path: '/referrals/leaderboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDriverVerifyRoute =
+  AuthenticatedDriverVerifyRouteImport.update({
+    id: '/driver/verify',
+    path: '/driver/verify',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/safety': typeof AuthenticatedSafetyRoute
   '/trips': typeof AuthenticatedTripsRoute
+  '/driver/verify': typeof AuthenticatedDriverVerifyRoute
   '/referrals/leaderboard': typeof AuthenticatedReferralsLeaderboardRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -156,6 +164,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/safety': typeof AuthenticatedSafetyRoute
   '/trips': typeof AuthenticatedTripsRoute
+  '/driver/verify': typeof AuthenticatedDriverVerifyRoute
   '/referrals/leaderboard': typeof AuthenticatedReferralsLeaderboardRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -177,6 +186,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/safety': typeof AuthenticatedSafetyRoute
   '/_authenticated/trips': typeof AuthenticatedTripsRoute
+  '/_authenticated/driver/verify': typeof AuthenticatedDriverVerifyRoute
   '/_authenticated/referrals/leaderboard': typeof AuthenticatedReferralsLeaderboardRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/safety'
     | '/trips'
+    | '/driver/verify'
     | '/referrals/leaderboard'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/safety'
     | '/trips'
+    | '/driver/verify'
     | '/referrals/leaderboard'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
@@ -237,6 +249,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/safety'
     | '/_authenticated/trips'
+    | '/_authenticated/driver/verify'
     | '/_authenticated/referrals/leaderboard'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
@@ -378,6 +391,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReferralsLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/driver/verify': {
+      id: '/_authenticated/driver/verify'
+      path: '/driver/verify'
+      fullPath: '/driver/verify'
+      preLoaderRoute: typeof AuthenticatedDriverVerifyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -394,6 +414,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSafetyRoute: typeof AuthenticatedSafetyRoute
   AuthenticatedTripsRoute: typeof AuthenticatedTripsRoute
+  AuthenticatedDriverVerifyRoute: typeof AuthenticatedDriverVerifyRoute
   AuthenticatedReferralsLeaderboardRoute: typeof AuthenticatedReferralsLeaderboardRoute
   AuthenticatedReferralsIndexRoute: typeof AuthenticatedReferralsIndexRoute
 }
@@ -412,6 +433,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSafetyRoute: AuthenticatedSafetyRoute,
   AuthenticatedTripsRoute: AuthenticatedTripsRoute,
+  AuthenticatedDriverVerifyRoute: AuthenticatedDriverVerifyRoute,
   AuthenticatedReferralsLeaderboardRoute:
     AuthenticatedReferralsLeaderboardRoute,
   AuthenticatedReferralsIndexRoute: AuthenticatedReferralsIndexRoute,
