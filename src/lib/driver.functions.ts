@@ -110,9 +110,17 @@ export const acceptRide = createServerFn({ method: "POST" })
 
 type RideAction = "en_route" | "start" | "complete" | "cancel";
 
+type RideStatus =
+  | "requested"
+  | "accepted"
+  | "driver_en_route"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
+
 interface TransitionRule {
-  from: string[];
-  to: string;
+  from: RideStatus[];
+  to: RideStatus;
   timestamp?: "started_at" | "completed_at";
 }
 
@@ -142,7 +150,11 @@ export const advanceRide = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const rule = TRANSITIONS[data.action as RideAction];
 
-    const patch: Record<string, string> = { status: rule.to };
+    const patch: {
+      status: RideStatus;
+      started_at?: string;
+      completed_at?: string;
+    } = { status: rule.to };
     if (rule.timestamp) patch[rule.timestamp] = new Date().toISOString();
 
     const { data: ride, error } = await supabase
