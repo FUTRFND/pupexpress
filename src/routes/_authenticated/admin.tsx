@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -12,6 +13,7 @@ import {
   Route as RouteIcon,
   CheckCircle2,
   XCircle,
+  Search,
 } from "lucide-react";
 
 import {
@@ -23,8 +25,10 @@ import {
   reviewDriverApplication,
 } from "@/lib/admin.functions";
 import { formatCurrency } from "@/lib/format";
+import { StarRating } from "@/components/ratings/star-rating";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
