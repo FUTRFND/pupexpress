@@ -74,6 +74,7 @@ export const createRide = createServerFn({ method: "POST" })
         destination_lng: data.destination.lng,
         pet_id: data.petId ?? null,
         notes: data.notes ?? null,
+        referral_code: data.referralCode ? data.referralCode.toUpperCase() : null,
         status: "requested",
         payment_status: "unpaid",
         transfer_status: "not_ready",
