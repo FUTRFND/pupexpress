@@ -81,6 +81,7 @@ function RiderBooking() {
             lng: destination.lng,
           },
           petId: petId ?? null,
+          referralCode: promo?.valid ? promo.code : null,
         },
       });
     },
@@ -90,6 +91,7 @@ function RiderBooking() {
       setPickup(null);
       setDestination(null);
       setPetId(null);
+      setPromo(null);
       navigate({ to: "/trips" });
     },
     onError: (err) => {
