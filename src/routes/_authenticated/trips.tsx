@@ -1,14 +1,24 @@
 import { useEffect } from "react";
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useSearch, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, MapPin, Navigation, XCircle } from "lucide-react";
+import {
+  Loader2,
+  MapPin,
+  Navigation,
+  XCircle,
+  MessageCircle,
+} from "lucide-react";
 
 import { useMode } from "@/hooks/use-mode";
 import { listMyRides, cancelMyRide, type RideDTO } from "@/lib/rides.functions";
 import { listMyDriverRides } from "@/lib/driver.functions";
-import { rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
+import {
+  rideStatusLabel,
+  rideStatusVariant,
+  isActiveRide,
+} from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
 import { RideTimeline } from "@/components/trips/ride-timeline";
