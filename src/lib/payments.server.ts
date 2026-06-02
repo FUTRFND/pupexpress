@@ -22,7 +22,12 @@ interface PaidPatch {
 
 /** Mark a ride paid (idempotent) and attempt the driver transfer. */
 export async function markRidePaid(rideId: string, patch: PaidPatch): Promise<void> {
-  const update: Record<string, unknown> = {
+  const update: {
+    payment_status: "paid";
+    paid_at: string;
+    stripe_payment_intent_id?: string;
+    stripe_checkout_session_id?: string;
+  } = {
     payment_status: "paid",
     paid_at: new Date().toISOString(),
   };
