@@ -123,6 +123,8 @@ export function DriverPayoutCard() {
         ) : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        <StripeLiveModeBanner />
+
         {statusQuery.isLoading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" /> Checking payout setup…
@@ -143,13 +145,15 @@ export function DriverPayoutCard() {
             </div>
             <Button
               className="h-10"
-              disabled={linkMutation.isPending}
+              disabled={linkMutation.isPending || stripeBlocked}
               onClick={() => linkMutation.mutate()}
             >
               {linkMutation.isPending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" /> Opening…
                 </>
+              ) : stripeBlocked ? (
+                "Payout setup disabled (test mode required)"
               ) : (
                 "Complete payout setup"
               )}
