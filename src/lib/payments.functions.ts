@@ -35,6 +35,8 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     z.object({ rideId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
+    // SAFETY: block live-mode checkout sessions unless launch mode is on.
+    assertStripeActionsAllowed("Checkout");
     const { supabase, userId } = context;
 
     const { data: ride, error } = await supabase
