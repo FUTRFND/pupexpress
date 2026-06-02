@@ -306,10 +306,28 @@ export const reviewDriverApplication = createServerFn({ method: "POST" })
         updated_at: new Date().toISOString(),
       })
       .eq("id", data.verificationId)
-      .select("status")
+      .select("status, user_id")
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!updated) throw new Error("Application not found.");
+
+    const { createNotifications } = await import("./notifications.server");
+    await createNotifications([
+      {
+        user_id: updated.user_id,
+        title:
+          data.decision === "approve"
+            ? "You're approved to drive! 🎉"
+            : "Driver application update",
+        body:
+          data.decision === "approve"
+            ? "Your driver application was approved. Set up payouts to start accepting rides."
+            : data.notes?.trim()
+              ? data.notes.trim()
+              : "Your driver application wasn't approved this time.",
+        type: "driver",
+      },
+    ]);
 
     return { status: updated.status };
   });
