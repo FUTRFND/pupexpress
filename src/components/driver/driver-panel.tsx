@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DriverPayoutCard } from "@/components/driver/payout-card";
+import { DriverLocationSharer } from "@/components/trips/driver-location-sharer";
 
 const POLL_MS = 5000;
 
