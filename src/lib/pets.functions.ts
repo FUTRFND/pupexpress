@@ -57,3 +57,21 @@ export const createPet = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return pet;
   });
+
+/** Delete a pet owned by the signed-in user. */
+export const deletePet = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ petId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ id: string }> => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("pets")
+      .delete()
+      .eq("id", data.petId)
+      .eq("owner_id", userId);
+
+    if (error) throw new Error(error.message);
+    return { id: data.petId };
+  });
