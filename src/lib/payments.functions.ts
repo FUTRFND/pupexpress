@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getStripe, computeFees, toMinorUnits } from "./stripe.server";
 import { ensureStripeCustomer, recordCheckoutPayment } from "./payments.server";
+import { assertStripeActionsAllowed } from "./stripe-guard.server";
 
 /** States in which a rider is allowed to start (or retry) payment. */
 const PAYABLE_PAYMENT_STATUSES = ["unpaid", "payment_failed"];
