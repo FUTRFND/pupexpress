@@ -13,6 +13,7 @@ import type { SelectedPlace } from "@/lib/maps-loader";
 import { PlaceAutocomplete } from "@/components/booking/place-autocomplete";
 import { RideMap } from "@/components/booking/ride-map";
 import { AddPetDialog } from "@/components/booking/add-pet-dialog";
+import { PromoCodeInput, type PromoState } from "@/components/booking/promo-code-input";
 import { DriverPanel } from "@/components/driver/driver-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ function RiderBooking() {
   const [pickup, setPickup] = useState<SelectedPlace | null>(null);
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [petId, setPetId] = useState<string | null>(null);
+  const [promo, setPromo] = useState<PromoState | null>(null);
 
   const petsQuery = useQuery({
     queryKey: ["pets"],
@@ -79,6 +81,7 @@ function RiderBooking() {
             lng: destination.lng,
           },
           petId: petId ?? null,
+          referralCode: promo?.valid ? promo.code : null,
         },
       });
     },
@@ -88,6 +91,7 @@ function RiderBooking() {
       setPickup(null);
       setDestination(null);
       setPetId(null);
+      setPromo(null);
       navigate({ to: "/trips" });
     },
     onError: (err) => {
@@ -129,6 +133,9 @@ function RiderBooking() {
           selectedPetId={petId}
           onSelect={setPetId}
         />
+
+        <PromoCodeInput onValidatedChange={setPromo} />
+
 
         <Button
           className="h-11"

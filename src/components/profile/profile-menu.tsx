@@ -9,6 +9,7 @@ import {
   ListChecks,
   Dog,
   Mail,
+  Gift,
   ChevronRight,
 } from "lucide-react";
 
@@ -23,6 +24,12 @@ type MenuItem = {
 } & ({ to: string } | { href: string });
 
 const ITEMS: MenuItem[] = [
+  {
+    icon: Gift,
+    label: "Refer & Earn",
+    subtitle: "Share your code, friends get 25% off",
+    to: "/referrals",
+  },
   {
     icon: DollarSign,
     label: "Pricing & Rates",

@@ -23,8 +23,10 @@ import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/
 import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
 import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
 import { Route as AuthenticatedCommunityGuidelinesRouteImport } from './routes/_authenticated/community-guidelines'
+import { Route as AuthenticatedReferralsIndexRouteImport } from './routes/_authenticated/referrals.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicStripeAuditRouteImport } from './routes/api/public/stripe-audit'
+import { Route as AuthenticatedReferralsLeaderboardRouteImport } from './routes/_authenticated/referrals.leaderboard'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -98,6 +100,12 @@ const AuthenticatedCommunityGuidelinesRoute =
     path: '/community-guidelines',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedReferralsIndexRoute =
+  AuthenticatedReferralsIndexRouteImport.update({
+    id: '/referrals/',
+    path: '/referrals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe-webhook',
   path: '/api/public/stripe-webhook',
@@ -108,6 +116,12 @@ const ApiPublicStripeAuditRoute = ApiPublicStripeAuditRouteImport.update({
   path: '/api/public/stripe-audit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedReferralsLeaderboardRoute =
+  AuthenticatedReferralsLeaderboardRouteImport.update({
+    id: '/referrals/leaderboard',
+    path: '/referrals/leaderboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -123,8 +137,10 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/safety': typeof AuthenticatedSafetyRoute
   '/trips': typeof AuthenticatedTripsRoute
+  '/referrals/leaderboard': typeof AuthenticatedReferralsLeaderboardRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/referrals/': typeof AuthenticatedReferralsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -140,8 +156,10 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/safety': typeof AuthenticatedSafetyRoute
   '/trips': typeof AuthenticatedTripsRoute
+  '/referrals/leaderboard': typeof AuthenticatedReferralsLeaderboardRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/referrals': typeof AuthenticatedReferralsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -159,8 +177,10 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/safety': typeof AuthenticatedSafetyRoute
   '/_authenticated/trips': typeof AuthenticatedTripsRoute
+  '/_authenticated/referrals/leaderboard': typeof AuthenticatedReferralsLeaderboardRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/_authenticated/referrals/': typeof AuthenticatedReferralsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -178,8 +198,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/safety'
     | '/trips'
+    | '/referrals/leaderboard'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
+    | '/referrals/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -195,8 +217,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/safety'
     | '/trips'
+    | '/referrals/leaderboard'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
+    | '/referrals'
   id:
     | '__root__'
     | '/'
@@ -213,8 +237,10 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/safety'
     | '/_authenticated/trips'
+    | '/_authenticated/referrals/leaderboard'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
+    | '/_authenticated/referrals/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -324,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCommunityGuidelinesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/referrals/': {
+      id: '/_authenticated/referrals/'
+      path: '/referrals'
+      fullPath: '/referrals/'
+      preLoaderRoute: typeof AuthenticatedReferralsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/stripe-webhook': {
       id: '/api/public/stripe-webhook'
       path: '/api/public/stripe-webhook'
@@ -337,6 +370,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/stripe-audit'
       preLoaderRoute: typeof ApiPublicStripeAuditRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/referrals/leaderboard': {
+      id: '/_authenticated/referrals/leaderboard'
+      path: '/referrals/leaderboard'
+      fullPath: '/referrals/leaderboard'
+      preLoaderRoute: typeof AuthenticatedReferralsLeaderboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
@@ -354,6 +394,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSafetyRoute: typeof AuthenticatedSafetyRoute
   AuthenticatedTripsRoute: typeof AuthenticatedTripsRoute
+  AuthenticatedReferralsLeaderboardRoute: typeof AuthenticatedReferralsLeaderboardRoute
+  AuthenticatedReferralsIndexRoute: typeof AuthenticatedReferralsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -370,6 +412,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSafetyRoute: AuthenticatedSafetyRoute,
   AuthenticatedTripsRoute: AuthenticatedTripsRoute,
+  AuthenticatedReferralsLeaderboardRoute:
+    AuthenticatedReferralsLeaderboardRoute,
+  AuthenticatedReferralsIndexRoute: AuthenticatedReferralsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
