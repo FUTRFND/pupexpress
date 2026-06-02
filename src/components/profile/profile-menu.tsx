@@ -116,9 +116,31 @@ function Row({ item }: { item: MenuItem }) {
 }
 
 export function ProfileMenu() {
+  const checkFn = useServerFn(checkIsAdmin);
+  const adminQuery = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: () => checkFn(),
+    staleTime: 60_000,
+  });
+
   return (
     <Card>
       <CardContent className="divide-y p-0">
+        {adminQuery.data?.isAdmin ? (
+          <Link
+            to="/admin"
+            className="flex items-center gap-3 p-4 transition-colors hover:bg-accent"
+          >
+            <Row
+              item={{
+                icon: Shield,
+                label: "Admin Dashboard",
+                subtitle: "Manage drivers, applications & rides",
+                to: "/admin",
+              }}
+            />
+          </Link>
+        ) : null}
         {ITEMS.map((item) =>
           "to" in item ? (
             <Link
