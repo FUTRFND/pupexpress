@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import type { ComponentType } from "react";
 import {
   DollarSign,
@@ -12,8 +14,10 @@ import {
   Gift,
   Car,
   ChevronRight,
+  Shield,
 } from "lucide-react";
 
+import { checkIsAdmin } from "@/lib/admin.functions";
 import { Card, CardContent } from "@/components/ui/card";
 
 type IconType = ComponentType<{ className?: string }>;
