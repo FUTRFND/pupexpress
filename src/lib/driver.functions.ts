@@ -183,5 +183,37 @@ export const advanceRide = createServerFn({ method: "POST" })
     if (!ride) {
       throw new Error("That ride is no longer in a state you can update.");
     }
-    return ride as RideDTO;
+
+    const updated = ride as RideDTO;
+    const messages: Record<RideAction, { title: string; body: string }> = {
+      en_route: {
+        title: "Your driver is en route",
+        body: "Your driver is on the way to the pickup location.",
+      },
+      start: {
+        title: "Your ride has started",
+        body: "Your pet is on the way to the destination.",
+      },
+      complete: {
+        title: "Ride completed",
+        body: "Hope it went great! Tap to rate your driver.",
+      },
+      cancel: {
+        title: "Ride cancelled",
+        body: "Your driver cancelled this ride. You can book again anytime.",
+      },
+    };
+    const note = messages[data.action as RideAction];
+    const { createNotifications } = await import("./notifications.server");
+    await createNotifications([
+      {
+        user_id: updated.rider_id,
+        title: note.title,
+        body: note.body,
+        type: "ride",
+        ride_id: updated.id,
+      },
+    ]);
+
+    return updated;
   });
