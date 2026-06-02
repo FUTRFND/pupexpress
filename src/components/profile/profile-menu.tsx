@@ -26,6 +26,12 @@ type MenuItem = {
 
 const ITEMS: MenuItem[] = [
   {
+    icon: Car,
+    label: "Become a Driver",
+    subtitle: "Submit documents & set up payouts",
+    to: "/driver/verify",
+  },
+  {
     icon: Gift,
     label: "Refer & Earn",
     subtitle: "Share your code, friends get 25% off",
