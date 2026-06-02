@@ -25,6 +25,12 @@ type MenuItem = {
 
 const ITEMS: MenuItem[] = [
   {
+    icon: Gift,
+    label: "Refer & Earn",
+    subtitle: "Share your code, friends get 25% off",
+    to: "/referrals",
+  },
+  {
     icon: DollarSign,
     label: "Pricing & Rates",
     subtitle: "See how fares are calculated",
