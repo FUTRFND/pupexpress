@@ -23,6 +23,7 @@ import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/
 import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
 import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
 import { Route as AuthenticatedCommunityGuidelinesRouteImport } from './routes/_authenticated/community-guidelines'
+import { Route as AuthenticatedReferralsIndexRouteImport } from './routes/_authenticated/referrals.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicStripeAuditRouteImport } from './routes/api/public/stripe-audit'
 
@@ -98,6 +99,12 @@ const AuthenticatedCommunityGuidelinesRoute =
     path: '/community-guidelines',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedReferralsIndexRoute =
+  AuthenticatedReferralsIndexRouteImport.update({
+    id: '/referrals/',
+    path: '/referrals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe-webhook',
   path: '/api/public/stripe-webhook',
@@ -125,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/trips': typeof AuthenticatedTripsRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/referrals/': typeof AuthenticatedReferralsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,6 +150,7 @@ export interface FileRoutesByTo {
   '/trips': typeof AuthenticatedTripsRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/referrals': typeof AuthenticatedReferralsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,6 +170,7 @@ export interface FileRoutesById {
   '/_authenticated/trips': typeof AuthenticatedTripsRoute
   '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/_authenticated/referrals/': typeof AuthenticatedReferralsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/trips'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
+    | '/referrals/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/trips'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
+    | '/referrals'
   id:
     | '__root__'
     | '/'
@@ -215,6 +227,7 @@ export interface FileRouteTypes {
     | '/_authenticated/trips'
     | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
+    | '/_authenticated/referrals/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -324,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCommunityGuidelinesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/referrals/': {
+      id: '/_authenticated/referrals/'
+      path: '/referrals'
+      fullPath: '/referrals/'
+      preLoaderRoute: typeof AuthenticatedReferralsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/stripe-webhook': {
       id: '/api/public/stripe-webhook'
       path: '/api/public/stripe-webhook'
@@ -354,6 +374,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSafetyRoute: typeof AuthenticatedSafetyRoute
   AuthenticatedTripsRoute: typeof AuthenticatedTripsRoute
+  AuthenticatedReferralsIndexRoute: typeof AuthenticatedReferralsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -370,6 +391,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSafetyRoute: AuthenticatedSafetyRoute,
   AuthenticatedTripsRoute: AuthenticatedTripsRoute,
+  AuthenticatedReferralsIndexRoute: AuthenticatedReferralsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -384,3 +406,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
