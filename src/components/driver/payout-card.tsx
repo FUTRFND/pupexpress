@@ -68,10 +68,16 @@ export function DriverPayoutCard() {
     onSuccess: ({ url }) => {
       window.location.href = url;
     },
-    onError: (err) =>
-      toast.error(
-        err instanceof Error ? err.message : "Couldn't start payout setup",
-      ),
+    onError: (err) => {
+      const detail =
+        err instanceof Error ? err.message : "Couldn't start payout setup";
+      // Keep the screen alive and surface the full Stripe detail (useful for
+      // support) with a long duration instead of crashing on the thrown error.
+      toast.error("Payout setup couldn't start", {
+        description: detail,
+        duration: 15000,
+      });
+    },
   });
 
   // Re-sync from Stripe when returning from the onboarding flow.
