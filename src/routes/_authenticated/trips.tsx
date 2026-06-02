@@ -199,6 +199,13 @@ function RideCard({ ride, mode }: { ride: RideDTO; mode: "rider" | "driver" }) {
           )}
         </div>
 
+        <Button asChild variant="outline" className="h-10">
+          <Link to="/rides/$rideId" params={{ rideId: ride.id }}>
+            <MessageCircle className="size-4" />
+            {isActiveRide(ride.status) ? "Track ride & chat" : "View details"}
+          </Link>
+        </Button>
+
         {canPay ? <PayRideButton rideId={ride.id} className="h-10" /> : null}
 
         {canCancel ? (
