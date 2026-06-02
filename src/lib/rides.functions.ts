@@ -44,6 +44,13 @@ const createRideSchema = z.object({
   destination: locationSchema,
   petId: z.string().uuid().optional().nullable(),
   notes: z.string().trim().max(500).optional().nullable(),
+  referralCode: z
+    .string()
+    .trim()
+    .max(20)
+    .regex(/^[A-Za-z0-9-]+$/)
+    .optional()
+    .nullable(),
 });
 
 /** Create a ride request for the signed-in rider. */
