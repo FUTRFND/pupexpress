@@ -92,7 +92,7 @@ function TripsPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {rides.map((ride) => (
-            <RideCard key={ride.id} ride={ride} />
+            <RideCard key={ride.id} ride={ride} mode={mode} />
           ))}
         </div>
       )}
@@ -100,7 +100,16 @@ function TripsPage() {
   );
 }
 
-function RideCard({ ride }: { ride: RideDTO }) {
+const PAYABLE = ["unpaid", "payment_failed"];
+
+function RideCard({ ride, mode }: { ride: RideDTO; mode: "rider" | "driver" }) {
+  const currency = "usd";
+  const canPay =
+    mode === "rider" &&
+    ride.status === "completed" &&
+    Boolean(ride.driver_id) &&
+    PAYABLE.includes(ride.payment_status);
+
   return (
     <Card>
       <CardContent className="flex flex-col gap-3 py-4">
@@ -124,15 +133,34 @@ function RideCard({ ride }: { ride: RideDTO }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {ride.ride_total > 0 ? (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              {mode === "driver" ? "Your earnings" : "Ride total"}
+            </span>
+            <span className="font-semibold">
+              {formatCurrency(
+                mode === "driver" ? ride.driver_earnings : ride.ride_total,
+                currency,
+              )}
+            </span>
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="text-xs">
             Payment: {ride.payment_status}
           </Badge>
-          <Badge variant="outline" className="text-xs">
-            Transfer: {ride.transfer_status}
-          </Badge>
+          {(mode === "driver" || ride.transfer_status !== "not_ready") && (
+            <Badge variant="outline" className="text-xs">
+              Transfer: {ride.transfer_status}
+            </Badge>
+          )}
         </div>
+
+        {canPay ? <PayRideButton rideId={ride.id} className="h-10" /> : null}
       </CardContent>
     </Card>
   );
 }
+
