@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 import {
   Loader2,
   MapPin,
   Navigation,
   Power,
-  Car,
   CheckCircle2,
+  MessageCircle,
   Route as RouteIcon,
 } from "lucide-react";
 
