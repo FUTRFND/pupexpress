@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 import {
   Loader2,
   MapPin,
   Navigation,
   Power,
-  Car,
   CheckCircle2,
+  MessageCircle,
   Route as RouteIcon,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DriverPayoutCard } from "@/components/driver/payout-card";
+import { DriverLocationSharer } from "@/components/trips/driver-location-sharer";
 
 const POLL_MS = 5000;
 
@@ -295,10 +297,15 @@ function ActiveRideCard({
           )}
         </div>
 
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Car className="size-3.5" /> Live driver location syncing arrives with
-          the maps phase.
-        </p>
+        {isActiveRide(ride.status) ? (
+          <DriverLocationSharer rideId={ride.id} />
+        ) : null}
+
+        <Button asChild variant="outline" className="h-10">
+          <Link to="/rides/$rideId" params={{ rideId: ride.id }}>
+            <MessageCircle className="size-4" /> Track & chat with rider
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );
