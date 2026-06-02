@@ -10,6 +10,7 @@ import {
   Dog,
   Mail,
   Gift,
+  Car,
   ChevronRight,
 } from "lucide-react";
 
