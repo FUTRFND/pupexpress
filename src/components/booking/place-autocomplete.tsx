@@ -38,9 +38,8 @@ export function PlaceAutocomplete({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(
-    null,
-  );
+  // Loosely typed: the Google Places SDK is loaded at runtime in the browser.
+  const sessionTokenRef = useRef<unknown>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
