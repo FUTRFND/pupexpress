@@ -150,7 +150,7 @@ export const cancelMyRide = createServerFn({ method: "POST" })
       .update({ status: "cancelled" })
       .eq("id", data.rideId)
       .eq("rider_id", userId)
-      .in("status", ["requested", "accepted", "driver_en_route"])
+      .in("status", ["requested", "accepted", "driver_en_route", "driver_arrived"])
       .select(RIDE_COLUMNS)
       .maybeSingle();
 
