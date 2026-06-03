@@ -114,11 +114,36 @@ export function RideConversation({
 
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border">
-      <div className="border-b bg-muted/40 px-4 py-2.5 text-sm font-medium">
-        {counterpartName
-          ? `Chat with ${counterpartName}`
-          : "Conversation"}
+      <div className="flex items-center justify-between gap-2 border-b bg-muted/40 px-4 py-2.5 text-sm font-medium">
+        <span>
+          {counterpartName ? `Chat with ${counterpartName}` : "Conversation"}
+        </span>
+        {demoMode ? (
+          <div className="flex items-center gap-1 rounded-full bg-background p-0.5 text-xs">
+            {(["rider", "driver"] as const).map((role) => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => setSendAs(role)}
+                className={cn(
+                  "rounded-full px-2.5 py-1 capitalize transition-colors",
+                  sendAs === role
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
+
+      {demoMode ? (
+        <p className="bg-muted/20 px-4 py-1.5 text-[11px] text-muted-foreground">
+          Demo mode — sending as <span className="font-medium capitalize">{sendAs}</span>. Switch above to reply from the other side.
+        </p>
+      ) : null}
 
       <div
         ref={scrollRef}
