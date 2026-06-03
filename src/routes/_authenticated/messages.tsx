@@ -112,7 +112,14 @@ function MessagesPage() {
                         {relativeTime(c.lastMessageAt ?? c.createdAt)}
                       </span>
                     </div>
-                    <p className="truncate text-sm text-muted-foreground">
+                    <p
+                      className={
+                        "truncate text-sm " +
+                        (c.unreadCount > 0
+                          ? "font-medium text-foreground"
+                          : "text-muted-foreground")
+                      }
+                    >
                       {c.lastMessage ?? (
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="size-3" />
@@ -127,7 +134,13 @@ function MessagesPage() {
                       {rideStatusLabel(c.status)}
                     </Badge>
                   </div>
-                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                  {c.unreadCount > 0 ? (
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+                      {c.unreadCount > 9 ? "9+" : c.unreadCount}
+                    </span>
+                  ) : (
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                  )}
                 </CardContent>
               </Card>
             </Link>
