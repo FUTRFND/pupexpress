@@ -60,7 +60,7 @@ export function DriverReviews() {
                   <span className="text-sm font-medium">
                     {review.riderName ?? "A rider"}
                   </span>
-                  <StarRating value={review.rating} readOnly size="sm" />
+                  <StarRating value={review.rating} size="sm" />
                 </div>
                 {review.comment ? (
                   <p className="text-sm text-muted-foreground">
