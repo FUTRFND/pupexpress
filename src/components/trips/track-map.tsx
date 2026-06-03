@@ -20,6 +20,31 @@ interface TrackMapProps {
 }
 
 /**
+ * Top-down car silhouette (points "up"/north at rotation 0), so the marker's
+ * rotation can be driven directly by the driver's compass heading.
+ */
+const CAR_PATH =
+  "M -6 -10 C -6 -11.5 -5 -12 -3.5 -12 L 3.5 -12 C 5 -12 6 -11.5 6 -10 " +
+  "L 6 8 C 6 10 5 12 3.5 12 L -3.5 12 C -5 12 -6 10 -6 8 Z " +
+  "M -6 -4 L 6 -4 M -6 6 L 6 6";
+
+function carIcon(
+  google: typeof window.google,
+  heading: number,
+): google.maps.Symbol {
+  return {
+    path: CAR_PATH,
+    scale: 1.3,
+    fillColor: "#f97316",
+    fillOpacity: 1,
+    strokeColor: "#ffffff",
+    strokeWeight: 1.5,
+    rotation: heading,
+    anchor: new google.maps.Point(0, 0),
+  };
+}
+
+/**
  * Live ride map: shows pickup (A) and destination (B) markers plus a moving
  * driver marker that updates in realtime via Supabase Postgres changes on
  * `ride_locations` — no polling. Both participants share the same view.
@@ -150,25 +175,16 @@ export function TrackMap({
       driverMarkerRef.current = new google.maps.Marker({
         position: pos,
         map,
-        icon: {
-          path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-          scale: 5,
-          fillColor: "#0ea5a4",
-          fillOpacity: 1,
-          strokeColor: "#ffffff",
-          strokeWeight: 2,
-          rotation: driver.heading ?? 0,
-        },
+        icon: carIcon(google, driver.heading ?? 0),
         title: "Driver",
         zIndex: 999,
       });
     } else {
       driverMarkerRef.current.setPosition(pos);
-      const icon = driverMarkerRef.current.getIcon() as google.maps.Symbol;
-      driverMarkerRef.current.setIcon({
-        ...icon,
-        rotation: driver.heading ?? icon.rotation ?? 0,
-      });
+      const current = driverMarkerRef.current.getIcon() as google.maps.Symbol;
+      driverMarkerRef.current.setIcon(
+        carIcon(google, driver.heading ?? current.rotation ?? 0),
+      );
     }
     map.panTo(pos);
   }, [driver, status]);

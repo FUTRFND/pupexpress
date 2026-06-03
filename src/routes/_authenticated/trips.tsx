@@ -18,6 +18,8 @@ import {
   rideStatusLabel,
   rideStatusVariant,
   isActiveRide,
+  isOngoingRide,
+  isHistoryRide,
 } from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
 import { confirmRidePayment } from "@/lib/payments.functions";
@@ -26,6 +28,7 @@ import { PayRideButton } from "@/components/payments/pay-ride-button";
 import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
 import { RideTimeline } from "@/components/trips/ride-timeline";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -130,6 +133,54 @@ function TripsPage() {
 
   const query = mode === "rider" ? riderQuery : driverQuery;
   const rides = query.data ?? [];
+  const activeRides = rides.filter((r) => isOngoingRide(r.status));
+  const historyRides = rides.filter((r) => isHistoryRide(r.status));
+
+  const renderList = (list: RideDTO[], kind: "active" | "history") => {
+    if (query.isLoading) {
+      return (
+        <Card>
+          <CardContent className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" /> Loading trips…
+          </CardContent>
+        </Card>
+      );
+    }
+    if (query.isError) {
+      return (
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-destructive">
+            Couldn't load your trips. Pull to refresh or try again.
+          </CardContent>
+        </Card>
+      );
+    }
+    if (list.length === 0) {
+      return (
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            {kind === "active"
+              ? mode === "rider"
+                ? "No active rides. Book one from Home to get started."
+                : "No active trips. Go online from Home to accept ride requests."
+              : "No past trips yet. Completed and cancelled rides show up here."}
+          </CardContent>
+        </Card>
+      );
+    }
+    return (
+      <div className="flex flex-col gap-3">
+        {list.map((ride) => (
+          <RideCard
+            key={ride.id}
+            ride={ride}
+            mode={mode}
+            rating={ratingByRide.get(ride.id)}
+          />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -140,38 +191,22 @@ function TripsPage() {
           : "Rides you've accepted as a driver."}
       </p>
 
-      {query.isLoading ? (
-        <Card>
-          <CardContent className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" /> Loading trips…
-          </CardContent>
-        </Card>
-      ) : query.isError ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-destructive">
-            Couldn't load your trips. Pull to refresh or try again.
-          </CardContent>
-        </Card>
-      ) : rides.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            {mode === "rider"
-              ? "No rides yet. Book one from Home to get started."
-              : "No trips yet. Go online from Home to accept ride requests."}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {rides.map((ride) => (
-            <RideCard
-              key={ride.id}
-              ride={ride}
-              mode={mode}
-              rating={ratingByRide.get(ride.id)}
-            />
-          ))}
-        </div>
-      )}
+      <Tabs defaultValue="active" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="active">
+            Active{activeRides.length ? ` (${activeRides.length})` : ""}
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            History{historyRides.length ? ` (${historyRides.length})` : ""}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="active" className="mt-4">
+          {renderList(activeRides, "active")}
+        </TabsContent>
+        <TabsContent value="history" className="mt-4">
+          {renderList(historyRides, "history")}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
