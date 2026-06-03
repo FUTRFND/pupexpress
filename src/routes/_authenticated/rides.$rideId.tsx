@@ -90,6 +90,19 @@ function RideDetailPage() {
     enabled: detailQuery.isSuccess,
   });
 
+  const startFn = useServerFn(startRideAsRider);
+  const startMutation = useMutation({
+    mutationFn: (id: string) => startFn({ data: { rideId: id } }),
+    onSuccess: () => {
+      toast.success("Ride started — enjoy the trip!");
+      router.invalidate();
+    },
+    onError: (err) =>
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't start the ride.",
+      ),
+  });
+
   if (detailQuery.isLoading) {
     return (
       <div className="flex flex-col gap-3">
