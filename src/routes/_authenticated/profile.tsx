@@ -56,6 +56,8 @@ function ProfilePage() {
 
       <ProfileEditor />
 
+      {mode === "driver" ? <DriverReviews /> : null}
+
       <PetManager />
 
       <ProfileMenu />
