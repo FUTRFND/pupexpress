@@ -263,7 +263,7 @@ function ActiveRideCard({
   pending,
 }: {
   ride: RideDTO;
-  onAdvance: (action: "en_route" | "start" | "complete" | "cancel") => void;
+  onAdvance: (action: "en_route" | "arrive" | "complete" | "cancel") => void;
   pending: boolean;
 }) {
   return (
