@@ -82,6 +82,10 @@ export const createDemoConversation = createServerFn({ method: "POST" })
         status: "accepted",
         pickup_address: "123 Bark Avenue (Demo)",
         destination_address: "Sunnyside Dog Park (Demo)",
+        pickup_lat: DEMO_PICKUP.lat,
+        pickup_lng: DEMO_PICKUP.lng,
+        destination_lat: DEMO_DESTINATION.lat,
+        destination_lng: DEMO_DESTINATION.lng,
         accepted_at: now,
       })
       .select("id")
