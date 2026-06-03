@@ -58,8 +58,9 @@ export function RideConversation({
   });
 
   // Clear unread badges: mark counterpart messages read while the chat is open.
+  // Runs in demo mode too — the seeded "Demo Driver" messages otherwise stay
+  // unread forever and keep the Messages badge stuck.
   const markRead = useCallback(() => {
-    if (demoMode) return;
     markReadFn({ data: { rideId } })
       .then(() => {
         queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
@@ -68,7 +69,7 @@ export function RideConversation({
       .catch(() => {
         /* best-effort; the badge refreshes on next load */
       });
-  }, [demoMode, markReadFn, queryClient, rideId]);
+  }, [markReadFn, queryClient, rideId]);
 
   // Mark as read on open.
   useEffect(() => {
