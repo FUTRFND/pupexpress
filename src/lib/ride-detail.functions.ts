@@ -198,6 +198,8 @@ export interface ConversationDTO {
   lastMessage: string | null;
   lastMessageAt: string | null;
   createdAt: string;
+  /** Messages from the counterpart the viewer hasn't read yet. */
+  unreadCount: number;
 }
 
 /**
