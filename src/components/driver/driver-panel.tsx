@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   MessageCircle,
   Route as RouteIcon,
+  Wallet,
 } from "lucide-react";
 
 import {
