@@ -61,6 +61,24 @@ export const createRide = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<RideDTO> => {
     const { supabase, userId } = context;
 
+    // Compute the fare server-side from the live driving route so the stored
+    // total can't be tampered with by the client. If the route lookup fails
+    // (e.g. maps temporarily unavailable) fall back to the base fare model.
+    let rideTotal = 0;
+    let platformFee = 0;
+    let driverEarnings = 0;
+    try {
+      const quote = await quoteFare(
+        { lat: data.pickup.lat, lng: data.pickup.lng },
+        { lat: data.destination.lat, lng: data.destination.lng },
+      );
+      rideTotal = quote.rideTotal;
+      platformFee = quote.platformFee;
+      driverEarnings = quote.driverEarnings;
+    } catch (err) {
+      console.error("Fare quote failed; storing zeroed total", err);
+    }
+
     const { data: ride, error } = await supabase
       .from("rides")
       .insert({
@@ -76,6 +94,9 @@ export const createRide = createServerFn({ method: "POST" })
         pet_id: data.petId ?? null,
         notes: data.notes ?? null,
         referral_code: data.referralCode ? data.referralCode.toUpperCase() : null,
+        ride_total: rideTotal,
+        platform_fee: platformFee,
+        driver_earnings: driverEarnings,
         status: "requested",
         payment_status: "unpaid",
         transfer_status: "not_ready",
