@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -5,6 +6,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Loader2, MapPin, Navigation, RouteIcon } from "lucide-react";
 
 import { startRideAsRider } from "@/lib/rides.functions";
+import { simulateDemoDriverLocation } from "@/lib/demo.functions";
 
 import {
   getRideDetail,
