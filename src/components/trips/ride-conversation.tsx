@@ -11,6 +11,7 @@ import {
   sendRideMessage,
   type MessageDTO,
 } from "@/lib/ride-detail.functions";
+import { sendDemoMessage } from "@/lib/demo.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -31,16 +32,21 @@ export function RideConversation({
   rideId,
   counterpartName,
   disabled,
+  demoMode,
 }: {
   rideId: string;
   counterpartName: string | null;
   disabled?: boolean;
+  /** When true, show a Rider/Driver toggle so one account can simulate both sides. */
+  demoMode?: boolean;
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const listFn = useServerFn(listRideMessages);
   const sendFn = useServerFn(sendRideMessage);
+  const sendDemoFn = useServerFn(sendDemoMessage);
   const [draft, setDraft] = useState("");
+  const [sendAs, setSendAs] = useState<"rider" | "driver">("rider");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const queryKey = ["ride-messages", rideId];
@@ -84,7 +90,10 @@ export function RideConversation({
   }, [messages.length]);
 
   const sendMutation = useMutation({
-    mutationFn: (body: string) => sendFn({ data: { rideId, body } }),
+    mutationFn: (body: string) =>
+      demoMode
+        ? sendDemoFn({ data: { rideId, body, as: sendAs } })
+        : sendFn({ data: { rideId, body } }),
     onSuccess: (msg) => {
       queryClient.setQueryData<MessageDTO[]>(queryKey, (prev) => {
         const list = prev ?? [];
@@ -105,11 +114,36 @@ export function RideConversation({
 
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border">
-      <div className="border-b bg-muted/40 px-4 py-2.5 text-sm font-medium">
-        {counterpartName
-          ? `Chat with ${counterpartName}`
-          : "Conversation"}
+      <div className="flex items-center justify-between gap-2 border-b bg-muted/40 px-4 py-2.5 text-sm font-medium">
+        <span>
+          {counterpartName ? `Chat with ${counterpartName}` : "Conversation"}
+        </span>
+        {demoMode ? (
+          <div className="flex items-center gap-1 rounded-full bg-background p-0.5 text-xs">
+            {(["rider", "driver"] as const).map((role) => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => setSendAs(role)}
+                className={cn(
+                  "rounded-full px-2.5 py-1 capitalize transition-colors",
+                  sendAs === role
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
+
+      {demoMode ? (
+        <p className="bg-muted/20 px-4 py-1.5 text-[11px] text-muted-foreground">
+          Demo mode — sending as <span className="font-medium capitalize">{sendAs}</span>. Switch above to reply from the other side.
+        </p>
+      ) : null}
 
       <div
         ref={scrollRef}
@@ -163,7 +197,13 @@ export function RideConversation({
               handleSend();
             }
           }}
-          placeholder={disabled ? "Conversation closed" : "Type a message…"}
+          placeholder={
+            disabled
+              ? "Conversation closed"
+              : demoMode
+                ? `Message as ${sendAs}…`
+                : "Type a message…"
+          }
           maxLength={2000}
           disabled={disabled}
           className="h-10"

@@ -1,12 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, MessageCircle, ChevronRight, MapPin } from "lucide-react";
+import { toast } from "sonner";
+import { Loader2, MessageCircle, ChevronRight, MapPin, Sparkles } from "lucide-react";
 
 import { listConversations } from "@/lib/ride-detail.functions";
+import { createDemoConversation } from "@/lib/demo.functions";
 import { rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/messages")({
   component: MessagesPage,
@@ -24,15 +27,44 @@ function relativeTime(at: string | null): string {
 }
 
 function MessagesPage() {
+  const router = useRouter();
   const listFn = useServerFn(listConversations);
+  const demoFn = useServerFn(createDemoConversation);
   const { data: conversations = [], isLoading, isError } = useQuery({
     queryKey: ["conversations"],
     queryFn: () => listFn(),
   });
 
+  const demoMutation = useMutation({
+    mutationFn: () => demoFn(),
+    onSuccess: ({ rideId }) => {
+      router.navigate({ to: "/rides/$rideId", params: { rideId } });
+    },
+    onError: (err) =>
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't start demo conversation",
+      ),
+  });
+
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => demoMutation.mutate()}
+          disabled={demoMutation.isPending}
+        >
+          {demoMutation.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Sparkles className="size-4" />
+          )}
+          Demo chat
+        </Button>
+      </div>
+
 
       {isLoading ? (
         <Card>
