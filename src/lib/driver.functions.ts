@@ -191,9 +191,9 @@ export const advanceRide = createServerFn({ method: "POST" })
         title: "Your driver is en route",
         body: "Your driver is on the way to the pickup location.",
       },
-      start: {
-        title: "Your ride has started",
-        body: "Your pet is on the way to the destination.",
+      arrive: {
+        title: "Your driver has arrived",
+        body: "Your driver is at the pickup point. Open the app to start the ride.",
       },
       complete: {
         title: "Ride completed",
