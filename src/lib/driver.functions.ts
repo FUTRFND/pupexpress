@@ -121,12 +121,13 @@ export const acceptRide = createServerFn({ method: "POST" })
     return accepted;
   });
 
-type RideAction = "en_route" | "start" | "complete" | "cancel";
+type RideAction = "en_route" | "arrive" | "complete" | "cancel";
 
 type RideStatus =
   | "requested"
   | "accepted"
   | "driver_en_route"
+  | "driver_arrived"
   | "in_progress"
   | "completed"
   | "cancelled";
@@ -139,9 +140,9 @@ interface TransitionRule {
 
 const TRANSITIONS: Record<RideAction, TransitionRule> = {
   en_route: { from: ["accepted"], to: "driver_en_route" },
-  start: { from: ["driver_en_route"], to: "in_progress", timestamp: "started_at" },
+  arrive: { from: ["driver_en_route"], to: "driver_arrived" },
   complete: { from: ["in_progress"], to: "completed", timestamp: "completed_at" },
-  cancel: { from: ["accepted", "driver_en_route"], to: "cancelled" },
+  cancel: { from: ["accepted", "driver_en_route", "driver_arrived"], to: "cancelled" },
 };
 
 /**
