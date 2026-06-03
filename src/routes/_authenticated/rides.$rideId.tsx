@@ -107,7 +107,8 @@ function RideDetailPage() {
     );
   }
 
-  const { ride, counterpartName, counterpartId, viewerRole } = detailQuery.data;
+  const { ride, counterpartName, counterpartId, viewerRole, driverInfo } =
+    detailQuery.data;
   const active = isActiveRide(ride.status);
   const hasCounterpart = Boolean(counterpartId);
   const isDemo = import.meta.env.DEV && counterpartName === DEMO_DRIVER_NAME;
