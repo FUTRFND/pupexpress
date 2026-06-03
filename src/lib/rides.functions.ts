@@ -156,5 +156,21 @@ export const cancelMyRide = createServerFn({ method: "POST" })
 
     if (error) throw new Error(error.message);
     if (!ride) throw new Error("This ride can no longer be cancelled.");
-    return ride as RideDTO;
+
+    const cancelled = ride as RideDTO;
+    // If a driver had already accepted, let them know it's off (best-effort).
+    if (cancelled.driver_id) {
+      const { createNotifications } = await import("./notifications.server");
+      await createNotifications([
+        {
+          user_id: cancelled.driver_id,
+          title: "Ride cancelled by rider",
+          body: "The rider cancelled this ride. It's been removed from your trips.",
+          type: "ride",
+          ride_id: cancelled.id,
+        },
+      ]);
+    }
+
+    return cancelled;
   });
