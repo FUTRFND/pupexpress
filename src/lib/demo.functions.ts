@@ -2,10 +2,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { RideLocationDTO } from "@/lib/ride-detail.functions";
 
 /** Display name used to identify the simulated driver in demo conversations. */
 export const DEMO_DRIVER_NAME = "Demo Driver";
 const DEMO_DRIVER_EMAIL = "demo-driver@pupxpress.local";
+
+/** Fixed San Francisco route used so the demo ride has a real map + car path. */
+const DEMO_PICKUP = { lat: 37.7694, lng: -122.4862 }; // near Golden Gate Park
+const DEMO_DESTINATION = { lat: 37.7599, lng: -122.4148 }; // Dolores / dog park
 
 /**
  * Resolve the demo driver's user id, creating a real auth user the first time
