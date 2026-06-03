@@ -49,7 +49,7 @@ export function AppHeader() {
     >
       <div className="mx-auto flex w-full max-w-screen-sm items-center justify-between gap-3 px-4 py-3">
         <img
-          src={pupxpressLogo}
+          src={pupxpressLogo.url}
           alt="PupXpress"
           className="h-9 w-auto"
         />
