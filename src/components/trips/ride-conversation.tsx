@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   listRideMessages,
   sendRideMessage,
+  markRideMessagesRead,
   type MessageDTO,
 } from "@/lib/ride-detail.functions";
 import { sendDemoMessage } from "@/lib/demo.functions";
