@@ -195,6 +195,16 @@ function RideDetailPage() {
 
       {canPay ? <PayRideButton rideId={ride.id} className="h-11" /> : null}
 
+      {canReview ? (
+        <RateRideDialog
+          rideId={ride.id}
+          driverName={counterpartName}
+          existingRating={myRating?.rating}
+          existingComment={myRating?.comment}
+          className="h-11 w-full"
+        />
+      ) : null}
+
       <Card>
         <CardContent className="py-4">
           <RideTimeline ride={ride} />
