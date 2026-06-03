@@ -10,6 +10,7 @@ import {
 import { isActiveRide, rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
 import { TrackMap } from "@/components/trips/track-map";
+import { DriverCard } from "@/components/trips/driver-card";
 import { RideConversation } from "@/components/trips/ride-conversation";
 import { DEMO_DRIVER_NAME } from "@/lib/demo.functions";
 import { RideTimeline } from "@/components/trips/ride-timeline";
