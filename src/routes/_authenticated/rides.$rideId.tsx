@@ -221,7 +221,7 @@ function RideDetailPage() {
         <Button
           className="h-12 w-full text-base"
           disabled={startMutation.isPending}
-          onClick={() => startMutation.mutate()}
+          onClick={() => startMutation.mutate(ride.id)}
         >
           {startMutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
