@@ -1,12 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, MessageCircle, ChevronRight, MapPin } from "lucide-react";
+import { toast } from "sonner";
+import { Loader2, MessageCircle, ChevronRight, MapPin, Sparkles } from "lucide-react";
 
 import { listConversations } from "@/lib/ride-detail.functions";
+import { createDemoConversation } from "@/lib/demo.functions";
 import { rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/messages")({
   component: MessagesPage,
