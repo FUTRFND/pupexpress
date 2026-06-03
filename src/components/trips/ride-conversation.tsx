@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   listRideMessages,
   sendRideMessage,
+  markRideMessagesRead,
   type MessageDTO,
 } from "@/lib/ride-detail.functions";
 import { sendDemoMessage } from "@/lib/demo.functions";
@@ -45,6 +46,7 @@ export function RideConversation({
   const listFn = useServerFn(listRideMessages);
   const sendFn = useServerFn(sendRideMessage);
   const sendDemoFn = useServerFn(sendDemoMessage);
+  const markReadFn = useServerFn(markRideMessagesRead);
   const [draft, setDraft] = useState("");
   const [sendAs, setSendAs] = useState<"rider" | "driver">("rider");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -54,6 +56,26 @@ export function RideConversation({
     queryKey,
     queryFn: () => listFn({ data: { rideId } }),
   });
+
+  // Clear unread badges: mark counterpart messages read while the chat is open.
+  const markRead = useCallback(() => {
+    if (demoMode) return;
+    markReadFn({ data: { rideId } })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      })
+      .catch(() => {
+        /* best-effort; the badge refreshes on next load */
+      });
+  }, [demoMode, markReadFn, queryClient, rideId]);
+
+  // Mark as read on open.
+  useEffect(() => {
+    markRead();
+  }, [markRead]);
+
+
 
   // Realtime: append new messages as they arrive.
   useEffect(() => {
@@ -74,6 +96,8 @@ export function RideConversation({
             if (list.some((m) => m.id === row.id)) return list;
             return [...list, row];
           });
+          // A new message from the counterpart while the chat is open is read.
+          if (row.sender_id !== user?.id) markRead();
         },
       )
       .subscribe();
