@@ -225,11 +225,23 @@ function RideCard({
         <div className="flex flex-col gap-2 text-sm">
           <div className="flex items-start gap-2">
             <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
-            <span className="text-foreground">{ride.pickup_address}</span>
+            <div className="flex flex-col">
+              <span className="text-xs font-medium text-muted-foreground">
+                Pickup
+              </span>
+              <span className="text-foreground">{ride.pickup_address}</span>
+            </div>
           </div>
           <div className="flex items-start gap-2">
             <Navigation className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-            <span className="text-foreground">{ride.destination_address}</span>
+            <div className="flex flex-col">
+              <span className="text-xs font-medium text-muted-foreground">
+                Drop-off
+              </span>
+              <span className="text-foreground">
+                {ride.destination_address}
+              </span>
+            </div>
           </div>
         </div>
 
