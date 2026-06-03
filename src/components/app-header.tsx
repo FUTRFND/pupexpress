@@ -1,21 +1,45 @@
+import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Bell } from "lucide-react";
 
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { useMode } from "@/hooks/use-mode";
 import { getUnreadNotificationCount } from "@/lib/notifications.functions";
 import { cn } from "@/lib/utils";
 
 export function AppHeader() {
   const { mode, setMode } = useMode();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const countFn = useServerFn(getUnreadNotificationCount);
   const { data } = useQuery({
     queryKey: ["notifications-unread"],
     queryFn: () => countFn(),
-    refetchInterval: 30_000,
+    enabled: Boolean(user),
   });
   const unread = data?.count ?? 0;
+
+  // RLS scopes delivered rows to this user, so any insert/update is relevant.
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("notifications-bell")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["notifications-unread"] });
+          queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
 
   return (
     <header
