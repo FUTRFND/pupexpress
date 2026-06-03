@@ -19,6 +19,21 @@ export interface RideLocationDTO {
   created_at: string;
 }
 
+/** Driver identity + vehicle details a rider can verify before the ride. */
+export interface DriverInfoDTO {
+  name: string | null;
+  photoUrl: string | null;
+  vehicleMake: string | null;
+  vehicleModel: string | null;
+  vehicleYear: number | null;
+  vehicleColor: string | null;
+  licensePlate: string | null;
+  vehiclePhotoUrl: string | null;
+  /** Average star rating across all completed rides, null when none yet. */
+  avgRating: number | null;
+  ratingCount: number;
+}
+
 export interface RideDetailDTO {
   ride: RideDTO;
   /** The other participant (driver if you're the rider, and vice-versa). */
@@ -26,7 +41,13 @@ export interface RideDetailDTO {
   counterpartName: string | null;
   /** Whether the signed-in user is the rider or the driver on this ride. */
   viewerRole: "rider" | "driver";
+  /** Populated only when the viewer is the rider and a driver is assigned. */
+  driverInfo: DriverInfoDTO | null;
 }
+
+const DRIVER_DOCS_BUCKET = "driver-documents";
+const SIGNED_URL_TTL = 60 * 60; // 1 hour
+
 
 const rideIdSchema = z.object({ rideId: z.string().uuid() });
 
