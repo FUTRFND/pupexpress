@@ -270,3 +270,30 @@ function RideDetailPage() {
     </div>
   );
 }
+
+/**
+ * Drives the simulated demo driver's car along the route every few seconds so a
+ * single test account can preview the Uber-style live tracking. Renders nothing
+ * — the car appears/moves on the map via realtime location inserts.
+ */
+function DemoDriverSimulator({ rideId }: { rideId: string }) {
+  const simulateFn = useServerFn(simulateDemoDriverLocation);
+
+  useEffect(() => {
+    let active = true;
+    const tick = () => {
+      if (!active) return;
+      simulateFn({ data: { rideId } }).catch(() => {
+        /* transient errors are non-fatal; the next tick retries */
+      });
+    };
+    tick();
+    const id = setInterval(tick, 3500);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [rideId, simulateFn]);
+
+  return null;
+}
