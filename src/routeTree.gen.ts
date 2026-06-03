@@ -23,6 +23,7 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/_authenticated/harassment-prevention'
 import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
 import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
+import { Route as AuthenticatedEarningsRouteImport } from './routes/_authenticated/earnings'
 import { Route as AuthenticatedCommunityGuidelinesRouteImport } from './routes/_authenticated/community-guidelines'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedReferralsIndexRouteImport } from './routes/_authenticated/referrals.index'
@@ -104,6 +105,11 @@ const AuthenticatedEmergencyRoute = AuthenticatedEmergencyRouteImport.update({
   path: '/emergency',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEarningsRoute = AuthenticatedEarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCommunityGuidelinesRoute =
   AuthenticatedCommunityGuidelinesRouteImport.update({
     id: '/community-guidelines',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/community-guidelines': typeof AuthenticatedCommunityGuidelinesRoute
+  '/earnings': typeof AuthenticatedEarningsRoute
   '/emergency': typeof AuthenticatedEmergencyRoute
   '/faq': typeof AuthenticatedFaqRoute
   '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/community-guidelines': typeof AuthenticatedCommunityGuidelinesRoute
+  '/earnings': typeof AuthenticatedEarningsRoute
   '/emergency': typeof AuthenticatedEmergencyRoute
   '/faq': typeof AuthenticatedFaqRoute
   '/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/community-guidelines': typeof AuthenticatedCommunityGuidelinesRoute
+  '/_authenticated/earnings': typeof AuthenticatedEarningsRoute
   '/_authenticated/emergency': typeof AuthenticatedEmergencyRoute
   '/_authenticated/faq': typeof AuthenticatedFaqRoute
   '/_authenticated/harassment-prevention': typeof AuthenticatedHarassmentPreventionRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/community-guidelines'
+    | '/earnings'
     | '/emergency'
     | '/faq'
     | '/harassment-prevention'
@@ -250,6 +260,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/community-guidelines'
+    | '/earnings'
     | '/emergency'
     | '/faq'
     | '/harassment-prevention'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/_authenticated/admin'
     | '/_authenticated/community-guidelines'
+    | '/_authenticated/earnings'
     | '/_authenticated/emergency'
     | '/_authenticated/faq'
     | '/_authenticated/harassment-prevention'
@@ -401,6 +413,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmergencyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/earnings': {
+      id: '/_authenticated/earnings'
+      path: '/earnings'
+      fullPath: '/earnings'
+      preLoaderRoute: typeof AuthenticatedEarningsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/community-guidelines': {
       id: '/_authenticated/community-guidelines'
       path: '/community-guidelines'
@@ -463,6 +482,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedCommunityGuidelinesRoute: typeof AuthenticatedCommunityGuidelinesRoute
+  AuthenticatedEarningsRoute: typeof AuthenticatedEarningsRoute
   AuthenticatedEmergencyRoute: typeof AuthenticatedEmergencyRoute
   AuthenticatedFaqRoute: typeof AuthenticatedFaqRoute
   AuthenticatedHarassmentPreventionRoute: typeof AuthenticatedHarassmentPreventionRoute
@@ -484,6 +504,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedCommunityGuidelinesRoute: AuthenticatedCommunityGuidelinesRoute,
+  AuthenticatedEarningsRoute: AuthenticatedEarningsRoute,
   AuthenticatedEmergencyRoute: AuthenticatedEmergencyRoute,
   AuthenticatedFaqRoute: AuthenticatedFaqRoute,
   AuthenticatedHarassmentPreventionRoute:
@@ -516,13 +537,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
