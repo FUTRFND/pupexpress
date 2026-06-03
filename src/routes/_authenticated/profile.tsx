@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useMode } from "@/hooks/use-mode";
 import { ProfileEditor } from "@/components/profile/profile-editor";
+import { DriverReviews } from "@/components/profile/driver-reviews";
 import { PetManager } from "@/components/profile/pet-manager";
 import { ProfileMenu } from "@/components/profile/profile-menu";
 import {
@@ -54,6 +55,8 @@ function ProfilePage() {
       </Card>
 
       <ProfileEditor />
+
+      {mode === "driver" ? <DriverReviews /> : null}
 
       <PetManager />
 

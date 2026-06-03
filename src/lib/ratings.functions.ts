@@ -92,3 +92,68 @@ export const listMyRideRatings = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return (data ?? []) as RideRatingDTO[];
   });
+
+export interface DriverReviewDTO {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  riderName: string | null;
+}
+
+export interface DriverReviewsDTO {
+  avgRating: number | null;
+  count: number;
+  reviews: DriverReviewDTO[];
+}
+
+/**
+ * Reviews left for the signed-in driver, shown on their own profile. The
+ * driver is allowed (via RLS) to read ratings about them; rider display names
+ * are resolved with the admin client AFTER scoping to this driver, so no
+ * other profile data leaks.
+ */
+export const getMyDriverReviews = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<DriverReviewsDTO> => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("ride_ratings")
+      .select("id, rider_id, rating, comment, created_at")
+      .eq("driver_id", userId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const ratings = rows ?? [];
+    const count = ratings.length;
+    const avgRating =
+      count > 0
+        ? ratings.reduce((a, r) => a + (r.rating as number), 0) / count
+        : null;
+
+    const riderIds = [...new Set(ratings.map((r) => r.rider_id as string))];
+    const nameById = new Map<string, string | null>();
+    if (riderIds.length > 0) {
+      const { data: profiles } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", riderIds);
+      for (const p of profiles ?? []) {
+        nameById.set(p.id as string, (p.full_name as string) ?? null);
+      }
+    }
+
+    const reviews: DriverReviewDTO[] = ratings.map((r) => ({
+      id: r.id as string,
+      rating: r.rating as number,
+      comment: (r.comment as string) ?? null,
+      created_at: r.created_at as string,
+      riderName: nameById.get(r.rider_id as string) ?? null,
+    }));
+
+    return { avgRating, count, reviews };
+  });

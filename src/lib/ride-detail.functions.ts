@@ -19,6 +19,21 @@ export interface RideLocationDTO {
   created_at: string;
 }
 
+/** Driver identity + vehicle details a rider can verify before the ride. */
+export interface DriverInfoDTO {
+  name: string | null;
+  photoUrl: string | null;
+  vehicleMake: string | null;
+  vehicleModel: string | null;
+  vehicleYear: number | null;
+  vehicleColor: string | null;
+  licensePlate: string | null;
+  vehiclePhotoUrl: string | null;
+  /** Average star rating across all completed rides, null when none yet. */
+  avgRating: number | null;
+  ratingCount: number;
+}
+
 export interface RideDetailDTO {
   ride: RideDTO;
   /** The other participant (driver if you're the rider, and vice-versa). */
@@ -26,7 +41,13 @@ export interface RideDetailDTO {
   counterpartName: string | null;
   /** Whether the signed-in user is the rider or the driver on this ride. */
   viewerRole: "rider" | "driver";
+  /** Populated only when the viewer is the rider and a driver is assigned. */
+  driverInfo: DriverInfoDTO | null;
 }
+
+const DRIVER_DOCS_BUCKET = "driver-documents";
+const SIGNED_URL_TTL = 60 * 60; // 1 hour
+
 
 const rideIdSchema = z.object({ rideId: z.string().uuid() });
 
@@ -58,6 +79,7 @@ export const getRideDetail = createServerFn({ method: "GET" })
       viewerRole === "rider" ? r.driver_id : r.rider_id;
 
     let counterpartName: string | null = null;
+    let driverInfo: DriverInfoDTO | null = null;
     if (counterpartId) {
       const { supabaseAdmin } = await import(
         "@/integrations/supabase/client.server"
@@ -68,9 +90,67 @@ export const getRideDetail = createServerFn({ method: "GET" })
         .eq("id", counterpartId)
         .maybeSingle();
       counterpartName = profile?.full_name ?? null;
+
+      // Only the rider gets the Uber-style driver verification card.
+      if (viewerRole === "rider") {
+        const driverId = counterpartId;
+        const [{ data: verification }, { data: ratings }] = await Promise.all([
+          supabaseAdmin
+            .from("driver_verifications")
+            .select(
+              "driver_photo_url, vehicle_make, vehicle_model, vehicle_year, vehicle_color, license_plate, vehicle_photo_url",
+            )
+            .eq("user_id", driverId)
+            .maybeSingle(),
+          supabaseAdmin
+            .from("ride_ratings")
+            .select("rating")
+            .eq("driver_id", driverId),
+        ]);
+
+        const signPath = async (path: string | null) => {
+          if (!path) return null;
+          const { data: signed } = await supabaseAdmin.storage
+            .from(DRIVER_DOCS_BUCKET)
+            .createSignedUrl(path, SIGNED_URL_TTL);
+          return signed?.signedUrl ?? null;
+        };
+
+        const [photoUrl, vehiclePhotoUrl] = await Promise.all([
+          signPath((verification?.driver_photo_url as string) ?? null),
+          signPath((verification?.vehicle_photo_url as string) ?? null),
+        ]);
+
+        const ratingValues = (ratings ?? []).map((x) => x.rating as number);
+        const ratingCount = ratingValues.length;
+        const avgRating =
+          ratingCount > 0
+            ? ratingValues.reduce((a, b) => a + b, 0) / ratingCount
+            : null;
+
+        driverInfo = {
+          name: counterpartName,
+          photoUrl,
+          vehicleMake: (verification?.vehicle_make as string) ?? null,
+          vehicleModel: (verification?.vehicle_model as string) ?? null,
+          vehicleYear: (verification?.vehicle_year as number) ?? null,
+          vehicleColor: (verification?.vehicle_color as string) ?? null,
+          licensePlate: (verification?.license_plate as string) ?? null,
+          vehiclePhotoUrl,
+          avgRating,
+          ratingCount,
+        };
+      }
     }
 
-    return { ride: r, counterpartId, counterpartName, viewerRole };
+
+    return {
+      ride: r,
+      counterpartId,
+      counterpartName,
+      viewerRole,
+      driverInfo,
+    };
   });
 
 /** Load the message history for a ride. RLS scopes this to ride participants. */

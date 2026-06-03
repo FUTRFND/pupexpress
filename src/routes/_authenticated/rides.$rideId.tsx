@@ -7,9 +7,12 @@ import {
   getRideDetail,
   getRideLatestLocation,
 } from "@/lib/ride-detail.functions";
+import { listMyRideRatings } from "@/lib/ratings.functions";
+import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
 import { isActiveRide, rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
 import { TrackMap } from "@/components/trips/track-map";
+import { DriverCard } from "@/components/trips/driver-card";
 import { RideConversation } from "@/components/trips/ride-conversation";
 import { DEMO_DRIVER_NAME } from "@/lib/demo.functions";
 import { RideTimeline } from "@/components/trips/ride-timeline";
@@ -63,6 +66,7 @@ function RideDetailPage() {
   const { rideId } = Route.useParams();
   const getDetailFn = useServerFn(getRideDetail);
   const getLocationFn = useServerFn(getRideLatestLocation);
+  const ratingsFn = useServerFn(listMyRideRatings);
 
   const detailQuery = useQuery({
     queryKey: ["ride-detail", rideId],
@@ -72,6 +76,12 @@ function RideDetailPage() {
   const locationQuery = useQuery({
     queryKey: ["ride-location", rideId],
     queryFn: () => getLocationFn({ data: { rideId } }),
+    enabled: detailQuery.isSuccess,
+  });
+
+  const ratingsQuery = useQuery({
+    queryKey: ["my-ride-ratings"],
+    queryFn: () => ratingsFn(),
     enabled: detailQuery.isSuccess,
   });
 
@@ -106,7 +116,8 @@ function RideDetailPage() {
     );
   }
 
-  const { ride, counterpartName, counterpartId, viewerRole } = detailQuery.data;
+  const { ride, counterpartName, counterpartId, viewerRole, driverInfo } =
+    detailQuery.data;
   const active = isActiveRide(ride.status);
   const hasCounterpart = Boolean(counterpartId);
   const isDemo = import.meta.env.DEV && counterpartName === DEMO_DRIVER_NAME;
@@ -115,6 +126,12 @@ function RideDetailPage() {
     ride.status === "completed" &&
     Boolean(ride.driver_id) &&
     PAYABLE.includes(ride.payment_status);
+
+  const canReview =
+    viewerRole === "rider" &&
+    ride.status === "completed" &&
+    Boolean(ride.driver_id);
+  const myRating = (ratingsQuery.data ?? []).find((r) => r.ride_id === ride.id);
 
   return (
     <div className="flex flex-col gap-4">
@@ -156,6 +173,9 @@ function RideDetailPage() {
         </div>
       </div>
 
+      {driverInfo ? <DriverCard driver={driverInfo} /> : null}
+
+
       {ride.ride_total > 0 ? (
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">
@@ -174,6 +194,16 @@ function RideDetailPage() {
       ) : null}
 
       {canPay ? <PayRideButton rideId={ride.id} className="h-11" /> : null}
+
+      {canReview ? (
+        <RateRideDialog
+          rideId={ride.id}
+          driverName={counterpartName}
+          existingRating={myRating?.rating}
+          existingComment={myRating?.comment}
+          className="h-11 w-full"
+        />
+      ) : null}
 
       <Card>
         <CardContent className="py-4">
