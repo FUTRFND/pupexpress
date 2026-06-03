@@ -32,16 +32,21 @@ export function RideConversation({
   rideId,
   counterpartName,
   disabled,
+  demoMode,
 }: {
   rideId: string;
   counterpartName: string | null;
   disabled?: boolean;
+  /** When true, show a Rider/Driver toggle so one account can simulate both sides. */
+  demoMode?: boolean;
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const listFn = useServerFn(listRideMessages);
   const sendFn = useServerFn(sendRideMessage);
+  const sendDemoFn = useServerFn(sendDemoMessage);
   const [draft, setDraft] = useState("");
+  const [sendAs, setSendAs] = useState<"rider" | "driver">("rider");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const queryKey = ["ride-messages", rideId];
