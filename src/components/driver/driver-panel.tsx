@@ -129,6 +129,11 @@ export function DriverPanel() {
   return (
     <div className="flex flex-col gap-4">
       <DriverPayoutCard />
+      <Button asChild variant="outline" className="h-10">
+        <Link to="/earnings">
+          <Wallet className="size-4" /> View earnings history
+        </Link>
+      </Button>
       <Card className="overflow-hidden">
 
         <CardContent className="flex items-center justify-between gap-3 py-4">
