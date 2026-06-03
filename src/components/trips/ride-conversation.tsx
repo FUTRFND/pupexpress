@@ -46,6 +46,7 @@ export function RideConversation({
   const listFn = useServerFn(listRideMessages);
   const sendFn = useServerFn(sendRideMessage);
   const sendDemoFn = useServerFn(sendDemoMessage);
+  const markReadFn = useServerFn(markRideMessagesRead);
   const [draft, setDraft] = useState("");
   const [sendAs, setSendAs] = useState<"rider" | "driver">("rider");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -55,6 +56,37 @@ export function RideConversation({
     queryKey,
     queryFn: () => listFn({ data: { rideId } }),
   });
+
+  // Clear unread badges: mark counterpart messages read while the chat is open.
+  const markRead = useRef(() => {
+    if (demoMode) return;
+    markReadFn({ data: { rideId } })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      })
+      .catch(() => {
+        /* best-effort; the badge refreshes on next load */
+      });
+  });
+  markRead.current = () => {
+    if (demoMode) return;
+    markReadFn({ data: { rideId } })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      })
+      .catch(() => {
+        /* best-effort; the badge refreshes on next load */
+      });
+  };
+
+  // Mark as read on open.
+  useEffect(() => {
+    markRead.current();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rideId]);
+
 
   // Realtime: append new messages as they arrive.
   useEffect(() => {
