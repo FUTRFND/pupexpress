@@ -11,6 +11,7 @@ import { isActiveRide, rideStatusLabel, rideStatusVariant } from "@/lib/ride-sta
 import { formatCurrency } from "@/lib/format";
 import { TrackMap } from "@/components/trips/track-map";
 import { RideConversation } from "@/components/trips/ride-conversation";
+import { DEMO_DRIVER_ID } from "@/lib/demo.functions";
 import { RideTimeline } from "@/components/trips/ride-timeline";
 import { DriverLocationSharer } from "@/components/trips/driver-location-sharer";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
