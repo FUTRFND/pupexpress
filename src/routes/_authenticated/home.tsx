@@ -134,6 +134,13 @@ function RiderBooking() {
           onClear={() => setDestination(null)}
         />
 
+        <FareEstimate
+          pickup={pickup}
+          destination={destination}
+          onQuote={handleQuote}
+        />
+
+
         <PetPicker
           pets={pets}
           loading={petsQuery.isLoading}
