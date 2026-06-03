@@ -156,7 +156,7 @@ export const advanceRide = createServerFn({ method: "POST" })
     z
       .object({
         rideId: z.string().uuid(),
-        action: z.enum(["en_route", "start", "complete", "cancel"]),
+        action: z.enum(["en_route", "arrive", "complete", "cancel"]),
       })
       .parse(input),
   )
