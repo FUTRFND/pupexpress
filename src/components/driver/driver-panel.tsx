@@ -85,7 +85,7 @@ export function DriverPanel() {
   const advanceMutation = useMutation({
     mutationFn: (vars: {
       rideId: string;
-      action: "en_route" | "start" | "complete" | "cancel";
+      action: "en_route" | "arrive" | "complete" | "cancel";
     }) => advanceFn({ data: vars }),
     onSuccess: (_d, vars) => {
       toast.success(
