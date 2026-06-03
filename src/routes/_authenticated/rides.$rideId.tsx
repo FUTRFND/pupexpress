@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -5,6 +6,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Loader2, MapPin, Navigation, RouteIcon } from "lucide-react";
 
 import { startRideAsRider } from "@/lib/rides.functions";
+import { simulateDemoDriverLocation } from "@/lib/demo.functions";
 
 import {
   getRideDetail,
@@ -179,6 +181,10 @@ function RideDetailPage() {
         live={active}
       />
 
+      {isDemo && active && viewerRole === "rider" ? (
+        <DemoDriverSimulator rideId={ride.id} />
+      ) : null}
+
       <div className="flex flex-col gap-2 text-sm">
         <div className="flex items-start gap-2">
           <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
@@ -263,4 +269,31 @@ function RideDetailPage() {
       )}
     </div>
   );
+}
+
+/**
+ * Drives the simulated demo driver's car along the route every few seconds so a
+ * single test account can preview the Uber-style live tracking. Renders nothing
+ * — the car appears/moves on the map via realtime location inserts.
+ */
+function DemoDriverSimulator({ rideId }: { rideId: string }) {
+  const simulateFn = useServerFn(simulateDemoDriverLocation);
+
+  useEffect(() => {
+    let active = true;
+    const tick = () => {
+      if (!active) return;
+      simulateFn({ data: { rideId } }).catch(() => {
+        /* transient errors are non-fatal; the next tick retries */
+      });
+    };
+    tick();
+    const id = setInterval(tick, 3500);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [rideId, simulateFn]);
+
+  return null;
 }

@@ -2,10 +2,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { RideLocationDTO } from "@/lib/ride-detail.functions";
 
 /** Display name used to identify the simulated driver in demo conversations. */
 export const DEMO_DRIVER_NAME = "Demo Driver";
 const DEMO_DRIVER_EMAIL = "demo-driver@pupxpress.local";
+
+/** Fixed San Francisco route used so the demo ride has a real map + car path. */
+const DEMO_PICKUP = { lat: 37.7694, lng: -122.4862 }; // near Golden Gate Park
+const DEMO_DESTINATION = { lat: 37.7599, lng: -122.4148 }; // Dolores / dog park
 
 /**
  * Resolve the demo driver's user id, creating a real auth user the first time
@@ -77,6 +82,10 @@ export const createDemoConversation = createServerFn({ method: "POST" })
         status: "accepted",
         pickup_address: "123 Bark Avenue (Demo)",
         destination_address: "Sunnyside Dog Park (Demo)",
+        pickup_lat: DEMO_PICKUP.lat,
+        pickup_lng: DEMO_PICKUP.lng,
+        destination_lat: DEMO_DESTINATION.lat,
+        destination_lng: DEMO_DESTINATION.lng,
         accepted_at: now,
       })
       .select("id")
@@ -140,4 +149,82 @@ export const sendDemoMessage = createServerFn({ method: "POST" })
 
     if (error) throw new Error(error.message);
     return row;
+  });
+
+/**
+ * Advance the demo driver's car one step along the route toward the
+ * destination and insert a new `ride_locations` point. Riders watching the
+ * demo ride see the car move in realtime (TrackMap subscribes to inserts), so
+ * a single account can preview the Uber-style live tracking without a second
+ * device sharing GPS. Only the demo ride's rider can trigger this.
+ */
+export const simulateDemoDriverLocation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ rideId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<RideLocationDTO | null> => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+
+    const { data: ride } = await supabaseAdmin
+      .from("rides")
+      .select(
+        "id, rider_id, driver_id, pickup_lat, pickup_lng, destination_lat, destination_lng",
+      )
+      .eq("id", data.rideId)
+      .maybeSingle();
+    if (!ride) throw new Error("Ride not found.");
+    if (ride.rider_id !== userId) throw new Error("This isn't your ride.");
+
+    const demoDriverId = await ensureDemoDriverId(supabaseAdmin);
+    if (ride.driver_id !== demoDriverId) {
+      throw new Error("Live simulation is only available for demo rides.");
+    }
+
+    const pickup = {
+      lat: ride.pickup_lat ?? DEMO_PICKUP.lat,
+      lng: ride.pickup_lng ?? DEMO_PICKUP.lng,
+    };
+    const dest = {
+      lat: ride.destination_lat ?? DEMO_DESTINATION.lat,
+      lng: ride.destination_lng ?? DEMO_DESTINATION.lng,
+    };
+
+    // Continue from the last known point, otherwise start at pickup.
+    const { data: last } = await supabaseAdmin
+      .from("ride_locations")
+      .select("lat, lng")
+      .eq("ride_id", data.rideId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const from = last ? { lat: last.lat, lng: last.lng } : pickup;
+
+    // Move ~20% of the remaining distance each tick (ease toward the target).
+    const STEP = 0.2;
+    const nextLat = from.lat + (dest.lat - from.lat) * STEP;
+    const nextLng = from.lng + (dest.lng - from.lng) * STEP;
+
+    // Compass heading (degrees clockwise from north) toward the destination.
+    const heading =
+      (Math.atan2(dest.lng - from.lng, dest.lat - from.lat) * 180) / Math.PI;
+    const normHeading = (heading + 360) % 360;
+
+    const { data: row, error } = await supabaseAdmin
+      .from("ride_locations")
+      .insert({
+        ride_id: data.rideId,
+        driver_id: demoDriverId,
+        lat: nextLat,
+        lng: nextLng,
+        heading: normHeading,
+      })
+      .select("lat, lng, heading, created_at")
+      .single();
+    if (error) throw new Error(error.message);
+    return row as RideLocationDTO;
   });
