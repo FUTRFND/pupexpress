@@ -158,6 +158,9 @@ function RideDetailPage() {
         </div>
       </div>
 
+      {driverInfo ? <DriverCard driver={driverInfo} /> : null}
+
+
       {ride.ride_total > 0 ? (
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">
