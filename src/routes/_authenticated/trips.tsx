@@ -18,6 +18,8 @@ import {
   rideStatusLabel,
   rideStatusVariant,
   isActiveRide,
+  isOngoingRide,
+  isHistoryRide,
 } from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
 import { confirmRidePayment } from "@/lib/payments.functions";
