@@ -42,3 +42,13 @@ export const ACTIVE_RIDE_STATUSES = [
 export function isActiveRide(status: string): boolean {
   return (ACTIVE_RIDE_STATUSES as readonly string[]).includes(status);
 }
+
+/** A ride still in the booking/fulfilment pipeline (shows in the Active tab). */
+export function isOngoingRide(status: string): boolean {
+  return status !== "completed" && status !== "cancelled";
+}
+
+/** A ride that has finished or been cancelled (shows in the History tab). */
+export function isHistoryRide(status: string): boolean {
+  return status === "completed" || status === "cancelled";
+}
