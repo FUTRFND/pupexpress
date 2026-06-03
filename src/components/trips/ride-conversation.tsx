@@ -197,7 +197,13 @@ export function RideConversation({
               handleSend();
             }
           }}
-          placeholder={disabled ? "Conversation closed" : "Type a message…"}
+          placeholder={
+            disabled
+              ? "Conversation closed"
+              : demoMode
+                ? `Message as ${sendAs}…`
+                : "Type a message…"
+          }
           maxLength={2000}
           disabled={disabled}
           className="h-10"
