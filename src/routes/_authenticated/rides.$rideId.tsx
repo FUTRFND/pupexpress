@@ -151,18 +151,6 @@ function RideDetailPage() {
     Boolean(ride.driver_id);
   const myRating = (ratingsQuery.data ?? []).find((r) => r.ride_id === ride.id);
 
-  const startFn = useServerFn(startRideAsRider);
-  const startMutation = useMutation({
-    mutationFn: () => startFn({ data: { rideId: ride.id } }),
-    onSuccess: () => {
-      toast.success("Ride started — enjoy the trip!");
-      router.invalidate();
-    },
-    onError: (err) =>
-      toast.error(
-        err instanceof Error ? err.message : "Couldn't start the ride.",
-      ),
-  });
   const canStart = viewerRole === "rider" && ride.status === "driver_arrived";
 
   return (
