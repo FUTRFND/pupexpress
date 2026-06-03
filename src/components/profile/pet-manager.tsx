@@ -6,6 +6,7 @@ import { Loader2, PawPrint, Plus, Trash2 } from "lucide-react";
 import { listPets, deletePet, type PetDTO } from "@/lib/pets.functions";
 import { AddPetDialog } from "@/components/booking/add-pet-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
