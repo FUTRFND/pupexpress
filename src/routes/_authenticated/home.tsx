@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -12,8 +12,10 @@ import { createRide } from "@/lib/rides.functions";
 import type { SelectedPlace } from "@/lib/maps-loader";
 import { PlaceAutocomplete } from "@/components/booking/place-autocomplete";
 import { RideMap } from "@/components/booking/ride-map";
+import { FareEstimate } from "@/components/booking/fare-estimate";
 import { AddPetDialog } from "@/components/booking/add-pet-dialog";
 import { PromoCodeInput, type PromoState } from "@/components/booking/promo-code-input";
+import type { FareEstimateDTO } from "@/lib/fare.functions";
 import { DriverPanel } from "@/components/driver/driver-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,6 +57,11 @@ function RiderBooking() {
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [petId, setPetId] = useState<string | null>(null);
   const [promo, setPromo] = useState<PromoState | null>(null);
+  const [, setQuote] = useState<FareEstimateDTO | null>(null);
+  const handleQuote = useCallback(
+    (q: FareEstimateDTO | null) => setQuote(q),
+    [],
+  );
 
   const petsQuery = useQuery({
     queryKey: ["pets"],
@@ -126,6 +133,13 @@ function RiderBooking() {
           onSelect={setDestination}
           onClear={() => setDestination(null)}
         />
+
+        <FareEstimate
+          pickup={pickup}
+          destination={destination}
+          onQuote={handleQuote}
+        />
+
 
         <PetPicker
           pets={pets}
