@@ -70,7 +70,13 @@ export const getRideDetail = createServerFn({ method: "GET" })
       counterpartName = profile?.full_name ?? null;
     }
 
-    return { ride: r, counterpartId, counterpartName, viewerRole };
+    return {
+      ride: r,
+      counterpartId,
+      counterpartName,
+      viewerRole,
+      driverInfo,
+    };
   });
 
 /** Load the message history for a ride. RLS scopes this to ride participants. */
