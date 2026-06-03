@@ -102,9 +102,17 @@ function PetRow({
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border bg-background p-3">
-      <div className="min-w-0">
-        <p className="truncate text-sm font-medium">{pet.name}</p>
-        <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
+      <div className="flex min-w-0 items-center gap-3">
+        <Avatar className="size-10 shrink-0">
+          {pet.photo_url ? <AvatarImage src={pet.photo_url} alt={pet.name} /> : null}
+          <AvatarFallback className="bg-muted">
+            <PawPrint className="size-4 text-muted-foreground" />
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">{pet.name}</p>
+          <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
+        </div>
       </div>
       <AlertDialog>
         <AlertDialogTrigger asChild>
