@@ -4,6 +4,7 @@ export const RIDE_STATUS_LABELS: Record<string, string> = {
   requested: "Requested",
   accepted: "Accepted",
   driver_en_route: "Driver en route",
+  driver_arrived: "Driver arrived",
   in_progress: "In progress",
   completed: "Completed",
   cancelled: "Cancelled",
