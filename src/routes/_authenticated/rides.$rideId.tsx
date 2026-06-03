@@ -66,6 +66,7 @@ function RideDetailPage() {
   const { rideId } = Route.useParams();
   const getDetailFn = useServerFn(getRideDetail);
   const getLocationFn = useServerFn(getRideLatestLocation);
+  const ratingsFn = useServerFn(listMyRideRatings);
 
   const detailQuery = useQuery({
     queryKey: ["ride-detail", rideId],
@@ -75,6 +76,12 @@ function RideDetailPage() {
   const locationQuery = useQuery({
     queryKey: ["ride-location", rideId],
     queryFn: () => getLocationFn({ data: { rideId } }),
+    enabled: detailQuery.isSuccess,
+  });
+
+  const ratingsQuery = useQuery({
+    queryKey: ["my-ride-ratings"],
+    queryFn: () => ratingsFn(),
     enabled: detailQuery.isSuccess,
   });
 
