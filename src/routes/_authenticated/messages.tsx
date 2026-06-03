@@ -27,15 +27,44 @@ function relativeTime(at: string | null): string {
 }
 
 function MessagesPage() {
+  const router = useRouter();
   const listFn = useServerFn(listConversations);
+  const demoFn = useServerFn(createDemoConversation);
   const { data: conversations = [], isLoading, isError } = useQuery({
     queryKey: ["conversations"],
     queryFn: () => listFn(),
   });
 
+  const demoMutation = useMutation({
+    mutationFn: () => demoFn(),
+    onSuccess: ({ rideId }) => {
+      router.navigate({ to: "/rides/$rideId", params: { rideId } });
+    },
+    onError: (err) =>
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't start demo conversation",
+      ),
+  });
+
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => demoMutation.mutate()}
+          disabled={demoMutation.isPending}
+        >
+          {demoMutation.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Sparkles className="size-4" />
+          )}
+          Demo chat
+        </Button>
+      </div>
+
 
       {isLoading ? (
         <Card>
