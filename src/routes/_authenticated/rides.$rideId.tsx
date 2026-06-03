@@ -11,7 +11,7 @@ import { isActiveRide, rideStatusLabel, rideStatusVariant } from "@/lib/ride-sta
 import { formatCurrency } from "@/lib/format";
 import { TrackMap } from "@/components/trips/track-map";
 import { RideConversation } from "@/components/trips/ride-conversation";
-import { DEMO_DRIVER_ID } from "@/lib/demo.functions";
+import { DEMO_DRIVER_NAME } from "@/lib/demo.functions";
 import { RideTimeline } from "@/components/trips/ride-timeline";
 import { DriverLocationSharer } from "@/components/trips/driver-location-sharer";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
@@ -109,7 +109,7 @@ function RideDetailPage() {
   const { ride, counterpartName, counterpartId, viewerRole } = detailQuery.data;
   const active = isActiveRide(ride.status);
   const hasCounterpart = Boolean(counterpartId);
-  const isDemo = counterpartId === DEMO_DRIVER_ID;
+  const isDemo = counterpartName === DEMO_DRIVER_NAME;
   const canPay =
     viewerRole === "rider" &&
     ride.status === "completed" &&
