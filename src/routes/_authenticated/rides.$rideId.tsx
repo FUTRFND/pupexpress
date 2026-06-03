@@ -1,7 +1,10 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Loader2, MapPin, Navigation } from "lucide-react";
+import { toast } from "sonner";
+import { ArrowLeft, Loader2, MapPin, Navigation, RouteIcon } from "lucide-react";
+
+import { startRideAsRider } from "@/lib/rides.functions";
 
 import {
   getRideDetail,
