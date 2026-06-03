@@ -28,6 +28,7 @@ import { PayRideButton } from "@/components/payments/pay-ride-button";
 import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
 import { RideTimeline } from "@/components/trips/ride-timeline";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
