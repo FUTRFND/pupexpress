@@ -10,7 +10,7 @@ import {
   Power,
   CheckCircle2,
   MessageCircle,
-  Route as RouteIcon,
+  
   Wallet,
 } from "lucide-react";
 
@@ -85,7 +85,7 @@ export function DriverPanel() {
   const advanceMutation = useMutation({
     mutationFn: (vars: {
       rideId: string;
-      action: "en_route" | "start" | "complete" | "cancel";
+      action: "en_route" | "arrive" | "complete" | "cancel";
     }) => advanceFn({ data: vars }),
     onSuccess: (_d, vars) => {
       toast.success(
@@ -263,7 +263,7 @@ function ActiveRideCard({
   pending,
 }: {
   ride: RideDTO;
-  onAdvance: (action: "en_route" | "start" | "complete" | "cancel") => void;
+  onAdvance: (action: "en_route" | "arrive" | "complete" | "cancel") => void;
   pending: boolean;
 }) {
   return (
@@ -282,16 +282,23 @@ function ActiveRideCard({
             </Button>
           )}
           {ride.status === "driver_en_route" && (
-            <Button className="h-11" disabled={pending} onClick={() => onAdvance("start")}>
-              <RouteIcon className="size-4" /> Start ride
+            <Button className="h-11" disabled={pending} onClick={() => onAdvance("arrive")}>
+              <MapPin className="size-4" /> I've arrived
             </Button>
+          )}
+          {ride.status === "driver_arrived" && (
+            <div className="flex items-center justify-center gap-2 rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" /> Waiting for the rider to start the ride…
+            </div>
           )}
           {ride.status === "in_progress" && (
             <Button className="h-11" disabled={pending} onClick={() => onAdvance("complete")}>
               <CheckCircle2 className="size-4" /> Complete ride
             </Button>
           )}
-          {(ride.status === "accepted" || ride.status === "driver_en_route") && (
+          {(ride.status === "accepted" ||
+            ride.status === "driver_en_route" ||
+            ride.status === "driver_arrived") && (
             <Button
               variant="ghost"
               className="h-10 text-destructive hover:text-destructive"

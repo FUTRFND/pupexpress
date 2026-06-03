@@ -1,7 +1,10 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Loader2, MapPin, Navigation } from "lucide-react";
+import { toast } from "sonner";
+import { ArrowLeft, Loader2, MapPin, Navigation, RouteIcon } from "lucide-react";
+
+import { startRideAsRider } from "@/lib/rides.functions";
 
 import {
   getRideDetail,
@@ -133,6 +136,20 @@ function RideDetailPage() {
     Boolean(ride.driver_id);
   const myRating = (ratingsQuery.data ?? []).find((r) => r.ride_id === ride.id);
 
+  const startFn = useServerFn(startRideAsRider);
+  const startMutation = useMutation({
+    mutationFn: () => startFn({ data: { rideId: ride.id } }),
+    onSuccess: () => {
+      toast.success("Ride started — enjoy the trip!");
+      router.invalidate();
+    },
+    onError: (err) =>
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't start the ride.",
+      ),
+  });
+  const canStart = viewerRole === "rider" && ride.status === "driver_arrived";
+
   return (
     <div className="flex flex-col gap-4">
       <BackLink />
@@ -192,6 +209,23 @@ function RideDetailPage() {
       {viewerRole === "driver" && active ? (
         <DriverLocationSharer rideId={ride.id} />
       ) : null}
+
+      {canStart ? (
+        <Button
+          className="h-12 w-full text-base"
+          disabled={startMutation.isPending}
+          onClick={() => startMutation.mutate()}
+        >
+          {startMutation.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <RouteIcon className="size-4" />
+          )}
+          Driver's here — start ride
+        </Button>
+      ) : null}
+
+
 
       {canPay ? <PayRideButton rideId={ride.id} className="h-11" /> : null}
 

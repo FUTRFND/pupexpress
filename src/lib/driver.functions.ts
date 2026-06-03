@@ -121,12 +121,13 @@ export const acceptRide = createServerFn({ method: "POST" })
     return accepted;
   });
 
-type RideAction = "en_route" | "start" | "complete" | "cancel";
+type RideAction = "en_route" | "arrive" | "complete" | "cancel";
 
 type RideStatus =
   | "requested"
   | "accepted"
   | "driver_en_route"
+  | "driver_arrived"
   | "in_progress"
   | "completed"
   | "cancelled";
@@ -139,9 +140,9 @@ interface TransitionRule {
 
 const TRANSITIONS: Record<RideAction, TransitionRule> = {
   en_route: { from: ["accepted"], to: "driver_en_route" },
-  start: { from: ["driver_en_route"], to: "in_progress", timestamp: "started_at" },
+  arrive: { from: ["driver_en_route"], to: "driver_arrived" },
   complete: { from: ["in_progress"], to: "completed", timestamp: "completed_at" },
-  cancel: { from: ["accepted", "driver_en_route"], to: "cancelled" },
+  cancel: { from: ["accepted", "driver_en_route", "driver_arrived"], to: "cancelled" },
 };
 
 /**
@@ -155,7 +156,7 @@ export const advanceRide = createServerFn({ method: "POST" })
     z
       .object({
         rideId: z.string().uuid(),
-        action: z.enum(["en_route", "start", "complete", "cancel"]),
+        action: z.enum(["en_route", "arrive", "complete", "cancel"]),
       })
       .parse(input),
   )
@@ -190,9 +191,9 @@ export const advanceRide = createServerFn({ method: "POST" })
         title: "Your driver is en route",
         body: "Your driver is on the way to the pickup location.",
       },
-      start: {
-        title: "Your ride has started",
-        body: "Your pet is on the way to the destination.",
+      arrive: {
+        title: "Your driver has arrived",
+        body: "Your driver is at the pickup point. Open the app to start the ride.",
       },
       complete: {
         title: "Ride completed",

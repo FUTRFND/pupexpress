@@ -1,0 +1,1 @@
+ALTER TYPE public.ride_status ADD VALUE IF NOT EXISTS 'driver_arrived' BEFORE 'in_progress';

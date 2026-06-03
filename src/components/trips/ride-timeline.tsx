@@ -9,7 +9,7 @@ interface Step {
   at: string | null;
 }
 
-const ORDER = ["requested", "accepted", "driver_en_route", "in_progress", "completed"];
+const ORDER = ["requested", "accepted", "driver_en_route", "driver_arrived", "in_progress", "completed"];
 
 function formatTime(at: string | null): string | null {
   if (!at) return null;
@@ -39,6 +39,7 @@ export function RideTimeline({ ride }: { ride: RideDTO }) {
     { key: "requested", label: "Requested", at: ride.created_at },
     { key: "accepted", label: "Driver accepted", at: ride.accepted_at },
     { key: "driver_en_route", label: "Driver en route", at: null },
+    { key: "driver_arrived", label: "Driver arrived", at: null },
     { key: "in_progress", label: "Ride started", at: ride.started_at },
     { key: "completed", label: "Completed", at: ride.completed_at },
   ];
