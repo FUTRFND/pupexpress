@@ -266,6 +266,7 @@ export function AddPetDialog({ trigger, onCreated }: AddPetDialogProps) {
               />
             ) : (
               <BreedCombobox
+                key={petType}
                 id="pet-breed"
                 value={breed}
                 onChange={setBreed}
