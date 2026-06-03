@@ -109,7 +109,7 @@ function RideDetailPage() {
   const { ride, counterpartName, counterpartId, viewerRole } = detailQuery.data;
   const active = isActiveRide(ride.status);
   const hasCounterpart = Boolean(counterpartId);
-  const isDemo = counterpartName === DEMO_DRIVER_NAME;
+  const isDemo = import.meta.env.DEV && counterpartName === DEMO_DRIVER_NAME;
   const canPay =
     viewerRole === "rider" &&
     ride.status === "completed" &&

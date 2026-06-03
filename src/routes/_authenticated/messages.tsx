@@ -46,23 +46,27 @@ function MessagesPage() {
       ),
   });
 
+  const isDev = import.meta.env.DEV;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => demoMutation.mutate()}
-          disabled={demoMutation.isPending}
-        >
-          {demoMutation.isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Sparkles className="size-4" />
-          )}
-          Demo chat
-        </Button>
+        {isDev && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => demoMutation.mutate()}
+            disabled={demoMutation.isPending}
+          >
+            {demoMutation.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Sparkles className="size-4" />
+            )}
+            Demo chat
+          </Button>
+        )}
       </div>
 
 
