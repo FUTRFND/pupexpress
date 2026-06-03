@@ -90,7 +90,10 @@ export function RideConversation({
   }, [messages.length]);
 
   const sendMutation = useMutation({
-    mutationFn: (body: string) => sendFn({ data: { rideId, body } }),
+    mutationFn: (body: string) =>
+      demoMode
+        ? sendDemoFn({ data: { rideId, body, as: sendAs } })
+        : sendFn({ data: { rideId, body } }),
     onSuccess: (msg) => {
       queryClient.setQueryData<MessageDTO[]>(queryKey, (prev) => {
         const list = prev ?? [];
