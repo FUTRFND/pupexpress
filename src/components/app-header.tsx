@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useMode } from "@/hooks/use-mode";
 import { getUnreadNotificationCount } from "@/lib/notifications.functions";
 import { cn } from "@/lib/utils";
+import pupxpressLogo from "@/assets/pupxpress-logo.png.asset.json";
 
 export function AppHeader() {
   const { mode, setMode } = useMode();
@@ -47,9 +48,11 @@ export function AppHeader() {
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="mx-auto flex w-full max-w-screen-sm items-center justify-between gap-3 px-4 py-3">
-        <span className="text-lg font-bold tracking-tight text-primary">
-          PupXpress
-        </span>
+        <img
+          src={pupxpressLogo.url}
+          alt="PupXpress"
+          className="h-9 w-auto"
+        />
 
         <div className="flex items-center gap-2">
           <div
