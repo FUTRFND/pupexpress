@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useMode } from "@/hooks/use-mode";
 import { getUnreadNotificationCount } from "@/lib/notifications.functions";
 import { cn } from "@/lib/utils";
+import pupxpressLogo from "@/assets/pupxpress-logo.png.asset.json";
 
 export function AppHeader() {
   const { mode, setMode } = useMode();
