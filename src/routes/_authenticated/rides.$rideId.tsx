@@ -7,6 +7,8 @@ import {
   getRideDetail,
   getRideLatestLocation,
 } from "@/lib/ride-detail.functions";
+import { listMyRideRatings } from "@/lib/ratings.functions";
+import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
 import { isActiveRide, rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
 import { TrackMap } from "@/components/trips/track-map";
