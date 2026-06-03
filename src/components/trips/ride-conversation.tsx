@@ -58,7 +58,7 @@ export function RideConversation({
   });
 
   // Clear unread badges: mark counterpart messages read while the chat is open.
-  const markRead = useRef(() => {
+  const markRead = useCallback(() => {
     if (demoMode) return;
     markReadFn({ data: { rideId } })
       .then(() => {
@@ -68,24 +68,13 @@ export function RideConversation({
       .catch(() => {
         /* best-effort; the badge refreshes on next load */
       });
-  });
-  markRead.current = () => {
-    if (demoMode) return;
-    markReadFn({ data: { rideId } })
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
-        queryClient.invalidateQueries({ queryKey: ["conversations"] });
-      })
-      .catch(() => {
-        /* best-effort; the badge refreshes on next load */
-      });
-  };
+  }, [demoMode, markReadFn, queryClient, rideId]);
 
   // Mark as read on open.
   useEffect(() => {
-    markRead.current();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rideId]);
+    markRead();
+  }, [markRead]);
+
 
 
   // Realtime: append new messages as they arrive.
