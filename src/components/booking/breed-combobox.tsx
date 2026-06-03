@@ -69,7 +69,7 @@ export function BreedCombobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[--radix-popover-trigger-width] p-0"
+        className="w-[--radix-popover-trigger-width] max-h-[min(300px,60vh)] overflow-y-auto p-0"
         align="start"
       >
         <Command>
