@@ -3,19 +3,47 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+/** Display name used to identify the simulated driver in demo conversations. */
+export const DEMO_DRIVER_NAME = "Demo Driver";
+const DEMO_DRIVER_EMAIL = "demo-driver@pupxpress.local";
+
 /**
- * Stable identity for the simulated driver used in demo conversations. This is a
- * plain profile row (no auth user) so a single real account can chat with
- * "itself" and exercise the full rider <-> driver messaging flow.
+ * Resolve the demo driver's user id, creating a real auth user the first time
+ * (rides.driver_id -> profiles.id -> auth.users, so a real account is required).
  */
-export const DEMO_DRIVER_ID = "00000000-0000-4000-8000-00000000d00d";
-const DEMO_DRIVER_NAME = "Demo Driver";
+async function ensureDemoDriverId(
+  supabaseAdmin: typeof import("@/integrations/supabase/client.server")["supabaseAdmin"],
+): Promise<string> {
+  const { data: existing } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("email", DEMO_DRIVER_EMAIL)
+    .maybeSingle();
+  if (existing) return existing.id;
+
+  const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+    email: DEMO_DRIVER_EMAIL,
+    password: crypto.randomUUID(),
+    email_confirm: true,
+    user_metadata: { full_name: DEMO_DRIVER_NAME },
+  });
+  if (error || !created.user) {
+    throw new Error(error?.message ?? "Couldn't create demo driver.");
+  }
+
+  // Mark the profile as a driver (the new-user trigger seeds it as a rider).
+  await supabaseAdmin
+    .from("profiles")
+    .update({ role: "driver", full_name: DEMO_DRIVER_NAME })
+    .eq("id", created.user.id);
+
+  return created.user.id;
+}
 
 /**
  * Create (or reuse) a demo conversation: a ride where the signed-in user is the
  * rider and a synthetic "Demo Driver" is the counterpart. Lets a single account
- * test the in-app chat end to end. Uses the admin client because it writes a
- * profile + ride row that RLS would otherwise block.
+ * test the in-app chat end to end.
  */
 export const createDemoConversation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -25,24 +53,14 @@ export const createDemoConversation = createServerFn({ method: "POST" })
       "@/integrations/supabase/client.server"
     );
 
-    // Ensure the synthetic driver profile exists.
-    await supabaseAdmin
-      .from("profiles")
-      .upsert(
-        {
-          id: DEMO_DRIVER_ID,
-          full_name: DEMO_DRIVER_NAME,
-          role: "driver",
-        },
-        { onConflict: "id" },
-      );
+    const demoDriverId = await ensureDemoDriverId(supabaseAdmin);
 
     // Reuse an existing demo ride for this user if one is already open.
     const { data: existing } = await supabaseAdmin
       .from("rides")
       .select("id")
       .eq("rider_id", userId)
-      .eq("driver_id", DEMO_DRIVER_ID)
+      .eq("driver_id", demoDriverId)
       .neq("status", "cancelled")
       .order("created_at", { ascending: false })
       .limit(1)
@@ -55,7 +73,7 @@ export const createDemoConversation = createServerFn({ method: "POST" })
       .from("rides")
       .insert({
         rider_id: userId,
-        driver_id: DEMO_DRIVER_ID,
+        driver_id: demoDriverId,
         status: "accepted",
         pickup_address: "123 Bark Avenue (Demo)",
         destination_address: "Sunnyside Dog Park (Demo)",
@@ -69,7 +87,7 @@ export const createDemoConversation = createServerFn({ method: "POST" })
     // Seed a friendly opener from the demo driver.
     await supabaseAdmin.from("messages").insert({
       ride_id: ride.id,
-      sender_id: DEMO_DRIVER_ID,
+      sender_id: demoDriverId,
       body: "Hi! I'm your demo driver 🐾 Send a message and I'll appear on the rider side. Use the toggle to reply as the driver too.",
     });
 
