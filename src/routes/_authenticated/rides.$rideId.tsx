@@ -90,6 +90,19 @@ function RideDetailPage() {
     enabled: detailQuery.isSuccess,
   });
 
+  const startFn = useServerFn(startRideAsRider);
+  const startMutation = useMutation({
+    mutationFn: (id: string) => startFn({ data: { rideId: id } }),
+    onSuccess: () => {
+      toast.success("Ride started — enjoy the trip!");
+      router.invalidate();
+    },
+    onError: (err) =>
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't start the ride.",
+      ),
+  });
+
   if (detailQuery.isLoading) {
     return (
       <div className="flex flex-col gap-3">
@@ -138,18 +151,6 @@ function RideDetailPage() {
     Boolean(ride.driver_id);
   const myRating = (ratingsQuery.data ?? []).find((r) => r.ride_id === ride.id);
 
-  const startFn = useServerFn(startRideAsRider);
-  const startMutation = useMutation({
-    mutationFn: () => startFn({ data: { rideId: ride.id } }),
-    onSuccess: () => {
-      toast.success("Ride started — enjoy the trip!");
-      router.invalidate();
-    },
-    onError: (err) =>
-      toast.error(
-        err instanceof Error ? err.message : "Couldn't start the ride.",
-      ),
-  });
   const canStart = viewerRole === "rider" && ride.status === "driver_arrived";
 
   return (
@@ -220,7 +221,7 @@ function RideDetailPage() {
         <Button
           className="h-12 w-full text-base"
           disabled={startMutation.isPending}
-          onClick={() => startMutation.mutate()}
+          onClick={() => startMutation.mutate(ride.id)}
         >
           {startMutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
