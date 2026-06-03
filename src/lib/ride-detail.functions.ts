@@ -249,14 +249,18 @@ export const listConversations = createServerFn({ method: "GET" })
     const rideIds = rideRows.map((r) => r.id);
     const { data: messages } = await supabaseAdmin
       .from("messages")
-      .select("ride_id, body, created_at")
+      .select("ride_id, body, created_at, sender_id, read_at")
       .in("ride_id", rideIds)
       .order("created_at", { ascending: false });
 
     const lastByRide = new Map<string, { body: string; created_at: string }>();
+    const unreadByRide = new Map<string, number>();
     for (const m of messages ?? []) {
       if (!lastByRide.has(m.ride_id)) {
         lastByRide.set(m.ride_id, { body: m.body, created_at: m.created_at });
+      }
+      if (m.sender_id !== userId && !m.read_at) {
+        unreadByRide.set(m.ride_id, (unreadByRide.get(m.ride_id) ?? 0) + 1);
       }
     }
 
@@ -274,6 +278,71 @@ export const listConversations = createServerFn({ method: "GET" })
         lastMessage: last?.body ?? null,
         lastMessageAt: last?.created_at ?? null,
         createdAt: r.created_at,
+        unreadCount: unreadByRide.get(r.id) ?? 0,
       };
     });
+  });
+
+/**
+ * Mark all messages on a ride from the counterpart as read for the signed-in
+ * user. Participation is verified through RLS (the user can only read the ride
+ * row if they're the rider or driver); the read flag is then written with the
+ * admin client because `messages` intentionally has no client UPDATE policy.
+ */
+export const markRideMessagesRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => rideIdSchema.parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { supabase, userId } = context;
+
+    // RLS: only a participant can see this ride row.
+    const { data: ride, error } = await supabase
+      .from("rides")
+      .select("id")
+      .eq("id", data.rideId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!ride) throw new Error("Ride not found.");
+
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    await supabaseAdmin
+      .from("messages")
+      .update({ read_at: new Date().toISOString() })
+      .eq("ride_id", data.rideId)
+      .neq("sender_id", userId)
+      .is("read_at", null);
+
+    return { ok: true };
+  });
+
+/**
+ * Total number of unread messages addressed to the signed-in user across all of
+ * their rides (used for the Messages tab badge). Scoped to the user's rides via
+ * the admin client after filtering by participation.
+ */
+export const getUnreadMessageCount = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ count: number }> => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+
+    const { data: rides } = await supabaseAdmin
+      .from("rides")
+      .select("id")
+      .or(`rider_id.eq.${userId},driver_id.eq.${userId}`);
+    const ids = (rides ?? []).map((r) => r.id);
+    if (ids.length === 0) return { count: 0 };
+
+    const { count } = await supabaseAdmin
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .in("ride_id", ids)
+      .neq("sender_id", userId)
+      .is("read_at", null);
+
+    return { count: count ?? 0 };
   });
