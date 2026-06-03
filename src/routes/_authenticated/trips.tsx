@@ -20,6 +20,7 @@ import {
   isActiveRide,
 } from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
+import { confirmRidePayment } from "@/lib/payments.functions";
 import { listMyRideRatings, type RideRatingDTO } from "@/lib/ratings.functions";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
 import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
@@ -58,23 +59,58 @@ export const Route = createFileRoute("/_authenticated/trips")({
 function TripsPage() {
   const { mode } = useMode();
   const search = useSearch({ from: "/_authenticated/trips" });
+  const queryClient = useQueryClient();
   const listRidesFn = useServerFn(listMyRides);
   const listDriverRidesFn = useServerFn(listMyDriverRides);
+  const confirmPaymentFn = useServerFn(confirmRidePayment);
 
-  // Surface the outcome after returning from Stripe Checkout.
+  // Surface the outcome after returning from Stripe Checkout. On success we
+  // actively verify the session so the ride flips to "paid" immediately
+  // instead of waiting on the webhook.
   useEffect(() => {
-    if (search.payment === "success") {
-      toast.success("Payment received — thank you!");
-    } else if (search.payment === "cancelled") {
+    if (search.payment === "cancelled") {
       toast.info("Payment cancelled. You can pay anytime from Trips.");
+      return;
     }
-  }, [search.payment]);
+    if (search.payment !== "success") return;
+
+    if (!search.ride) {
+      toast.success("Payment received — thank you!");
+      return;
+    }
+
+    let active = true;
+    const toastId = toast.loading("Confirming your payment…");
+    confirmPaymentFn({ data: { rideId: search.ride } })
+      .then((res) => {
+        if (!active) return;
+        if (res.paid) {
+          toast.success("Payment confirmed — thank you!", { id: toastId });
+        } else {
+          toast.info("Payment is processing — we'll update this shortly.", {
+            id: toastId,
+          });
+        }
+        queryClient.invalidateQueries({ queryKey: ["rides"] });
+      })
+      .catch(() => {
+        if (!active) return;
+        // Webhook remains the fallback source of truth.
+        toast.success("Payment received — thank you!", { id: toastId });
+        queryClient.invalidateQueries({ queryKey: ["rides"] });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [search.payment, search.ride, confirmPaymentFn, queryClient]);
 
   const riderQuery = useQuery({
     queryKey: ["rides"],
     queryFn: () => listRidesFn(),
     enabled: mode === "rider",
   });
+
 
   const driverQuery = useQuery({
     queryKey: ["driver-assigned"],

@@ -4,7 +4,11 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getStripe, computeFees, toMinorUnits } from "./stripe.server";
-import { ensureStripeCustomer, recordCheckoutPayment } from "./payments.server";
+import {
+  ensureStripeCustomer,
+  recordCheckoutPayment,
+  markRidePaid,
+} from "./payments.server";
 import { assertStripeActionsAllowed } from "./stripe-guard.server";
 
 /** States in which a rider is allowed to start (or retry) payment. */
@@ -153,4 +157,66 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     });
 
     return { url: session.url };
+  });
+
+export interface ConfirmPaymentResult {
+  paid: boolean;
+  status: "paid" | "pending" | "unpaid";
+}
+
+/**
+ * Actively verify a Stripe Checkout session on return from Checkout so the
+ * ride is marked paid immediately, without waiting on the webhook. The webhook
+ * remains the source of truth / fallback; this just removes the confirmation
+ * lag for the rider. Idempotent — `markRidePaid` no-ops if already paid.
+ */
+export const confirmRidePayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ rideId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<ConfirmPaymentResult> => {
+    const { supabase, userId } = context;
+
+    // RLS scopes this read to the signed-in rider — confirms ownership.
+    const { data: ride, error } = await supabase
+      .from("rides")
+      .select("id, payment_status, stripe_checkout_session_id")
+      .eq("id", data.rideId)
+      .eq("rider_id", userId)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!ride) throw new Error("Ride not found.");
+
+    if (ride.payment_status === "paid") {
+      return { paid: true, status: "paid" };
+    }
+    if (!ride.stripe_checkout_session_id) {
+      return { paid: false, status: "unpaid" };
+    }
+
+    const stripe = getStripe();
+    const session = await stripe.checkout.sessions.retrieve(
+      ride.stripe_checkout_session_id,
+    );
+
+    // Guard: the session must belong to this ride.
+    if (session.metadata?.ride_id && session.metadata.ride_id !== ride.id) {
+      return { paid: false, status: "pending" };
+    }
+
+    if (session.payment_status === "paid") {
+      const paymentIntentId =
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : (session.payment_intent?.id ?? null);
+      await markRidePaid(ride.id, {
+        paymentIntentId,
+        checkoutSessionId: session.id,
+      });
+      return { paid: true, status: "paid" };
+    }
+
+    return { paid: false, status: "pending" };
   });
