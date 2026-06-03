@@ -210,6 +210,23 @@ function RideDetailPage() {
         <DriverLocationSharer rideId={ride.id} />
       ) : null}
 
+      {canStart ? (
+        <Button
+          className="h-12 w-full text-base"
+          disabled={startMutation.isPending}
+          onClick={() => startMutation.mutate()}
+        >
+          {startMutation.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <RouteIcon className="size-4" />
+          )}
+          Driver's here — start ride
+        </Button>
+      ) : null}
+
+
+
       {canPay ? <PayRideButton rideId={ride.id} className="h-11" /> : null}
 
       {canReview ? (
