@@ -174,3 +174,44 @@ export const cancelMyRide = createServerFn({ method: "POST" })
 
     return cancelled;
   });
+
+/**
+ * Rider confirms the driver has arrived and starts the ride. Scoped by
+ * rider_id (RLS-backed) and the driver_arrived state, so only the rider can
+ * begin, and only once the driver is at the pickup point.
+ */
+export const startRideAsRider = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ rideId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<RideDTO> => {
+    const { supabase, userId } = context;
+    const { data: ride, error } = await supabase
+      .from("rides")
+      .update({ status: "in_progress", started_at: new Date().toISOString() })
+      .eq("id", data.rideId)
+      .eq("rider_id", userId)
+      .eq("status", "driver_arrived")
+      .select(RIDE_COLUMNS)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!ride) throw new Error("This ride can't be started right now.");
+
+    const started = ride as RideDTO;
+    if (started.driver_id) {
+      const { createNotifications } = await import("./notifications.server");
+      await createNotifications([
+        {
+          user_id: started.driver_id,
+          title: "Ride started",
+          body: "The rider confirmed pickup. The ride is now in progress.",
+          type: "ride",
+          ride_id: started.id,
+        },
+      ]);
+    }
+
+    return started;
+  });
