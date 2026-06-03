@@ -35,6 +35,7 @@ export function rideStatusLabel(status: string): string {
 export const ACTIVE_RIDE_STATUSES = [
   "accepted",
   "driver_en_route",
+  "driver_arrived",
   "in_progress",
 ] as const;
 
