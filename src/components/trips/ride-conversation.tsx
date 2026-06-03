@@ -11,6 +11,7 @@ import {
   sendRideMessage,
   type MessageDTO,
 } from "@/lib/ride-detail.functions";
+import { sendDemoMessage } from "@/lib/demo.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
