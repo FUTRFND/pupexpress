@@ -105,7 +105,21 @@ export const createRide = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw new Error(error.message);
-    return ride as RideDTO;
+
+    const created = ride as RideDTO;
+    // Let available drivers know there's a new ride to claim (best-effort).
+    const { notifyAvailableDrivers } = await import("./notifications.server");
+    await notifyAvailableDrivers(
+      {
+        title: "New ride request",
+        body: `Pickup at ${created.pickup_address}. Tap to view and accept.`,
+        type: "ride",
+        ride_id: created.id,
+      },
+      userId,
+    );
+
+    return created;
   });
 
 /** List rides the signed-in user requested as a rider, newest first. */
