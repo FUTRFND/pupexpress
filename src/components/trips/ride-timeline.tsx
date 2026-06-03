@@ -9,7 +9,7 @@ interface Step {
   at: string | null;
 }
 
-const ORDER = ["requested", "accepted", "driver_en_route", "in_progress", "completed"];
+const ORDER = ["requested", "accepted", "driver_en_route", "driver_arrived", "in_progress", "completed"];
 
 function formatTime(at: string | null): string | null {
   if (!at) return null;
