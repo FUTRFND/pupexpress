@@ -127,6 +127,12 @@ function RideDetailPage() {
     Boolean(ride.driver_id) &&
     PAYABLE.includes(ride.payment_status);
 
+  const canReview =
+    viewerRole === "rider" &&
+    ride.status === "completed" &&
+    Boolean(ride.driver_id);
+  const myRating = (ratingsQuery.data ?? []).find((r) => r.ride_id === ride.id);
+
   return (
     <div className="flex flex-col gap-4">
       <BackLink />
