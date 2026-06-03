@@ -277,3 +277,52 @@ export const getDriverEarnings = createServerFn({ method: "GET" })
       currency: getFeeConfig().currency,
     };
   });
+
+export interface DriverEarningRow {
+  rideId: string;
+  pickupAddress: string;
+  destinationAddress: string;
+  rideTotal: number;
+  platformFee: number;
+  driverEarnings: number;
+  status: string;
+  paymentStatus: string;
+  transferStatus: string;
+  completedAt: string | null;
+  createdAt: string;
+}
+
+/**
+ * Per-ride earnings history for the signed-in driver. Lists every ride the
+ * driver was assigned to that produced (or will produce) earnings, newest
+ * first, so the driver can reconcile each payout against a specific trip.
+ */
+export const listDriverEarnings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<DriverEarningRow[]> => {
+    const { supabase, userId } = context;
+    const { data: rides, error } = await supabase
+      .from("rides")
+      .select(
+        "id, pickup_address, destination_address, ride_total, platform_fee, driver_earnings, status, payment_status, transfer_status, completed_at, created_at",
+      )
+      .eq("driver_id", userId)
+      .gt("driver_earnings", 0)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+
+    return (rides ?? []).map((r) => ({
+      rideId: r.id,
+      pickupAddress: r.pickup_address,
+      destinationAddress: r.destination_address,
+      rideTotal: Number(r.ride_total ?? 0),
+      platformFee: Number(r.platform_fee ?? 0),
+      driverEarnings: Number(r.driver_earnings ?? 0),
+      status: r.status,
+      paymentStatus: r.payment_status,
+      transferStatus: r.transfer_status,
+      completedAt: r.completed_at,
+      createdAt: r.created_at,
+    }));
+  });
