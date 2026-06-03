@@ -36,3 +36,24 @@ export async function createNotifications(
     console.error("Failed to create notifications:", error.message);
   }
 }
+
+/**
+ * Fan out a notification to every available driver (role 'driver' or 'both'),
+ * excluding the rider who triggered it. Used when a new ride request opens so
+ * drivers learn about work in real time. Best-effort: failures are logged only.
+ */
+export async function notifyAvailableDrivers(
+  note: Omit<NotificationInput, "user_id">,
+  excludeUserId: string,
+): Promise<void> {
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .in("role", ["driver", "both"])
+    .neq("id", excludeUserId);
+  if (error) {
+    console.error("Failed to load drivers for notification:", error.message);
+    return;
+  }
+  await createNotifications((data ?? []).map((d) => ({ ...note, user_id: d.id })));
+}
