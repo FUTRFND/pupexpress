@@ -4,7 +4,11 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getStripe, computeFees, toMinorUnits } from "./stripe.server";
-import { ensureStripeCustomer, recordCheckoutPayment } from "./payments.server";
+import {
+  ensureStripeCustomer,
+  recordCheckoutPayment,
+  markRidePaid,
+} from "./payments.server";
 import { assertStripeActionsAllowed } from "./stripe-guard.server";
 
 /** States in which a rider is allowed to start (or retry) payment. */
