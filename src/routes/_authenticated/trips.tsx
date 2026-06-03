@@ -20,6 +20,7 @@ import {
   isActiveRide,
 } from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
+import { confirmRidePayment } from "@/lib/payments.functions";
 import { listMyRideRatings, type RideRatingDTO } from "@/lib/ratings.functions";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
 import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
