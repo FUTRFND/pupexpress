@@ -96,6 +96,8 @@ export function RideConversation({
             if (list.some((m) => m.id === row.id)) return list;
             return [...list, row];
           });
+          // A new message from the counterpart while the chat is open is read.
+          if (row.sender_id !== user?.id) markRead();
         },
       )
       .subscribe();
