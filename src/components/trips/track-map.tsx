@@ -150,25 +150,16 @@ export function TrackMap({
       driverMarkerRef.current = new google.maps.Marker({
         position: pos,
         map,
-        icon: {
-          path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-          scale: 5,
-          fillColor: "#0ea5a4",
-          fillOpacity: 1,
-          strokeColor: "#ffffff",
-          strokeWeight: 2,
-          rotation: driver.heading ?? 0,
-        },
+        icon: carIcon(google, driver.heading ?? 0),
         title: "Driver",
         zIndex: 999,
       });
     } else {
       driverMarkerRef.current.setPosition(pos);
-      const icon = driverMarkerRef.current.getIcon() as google.maps.Symbol;
-      driverMarkerRef.current.setIcon({
-        ...icon,
-        rotation: driver.heading ?? icon.rotation ?? 0,
-      });
+      const current = driverMarkerRef.current.getIcon() as google.maps.Symbol;
+      driverMarkerRef.current.setIcon(
+        carIcon(google, driver.heading ?? current.rotation ?? 0),
+      );
     }
     map.panTo(pos);
   }, [driver, status]);
