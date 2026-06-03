@@ -186,6 +186,7 @@ function RideDetailPage() {
           rideId={ride.id}
           counterpartName={counterpartName}
           disabled={ride.status === "cancelled"}
+          demoMode={isDemo}
         />
       ) : (
         <Card>
