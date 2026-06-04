@@ -28,6 +28,9 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthenticatedLayout() {
+  // Registers native push tokens (no-op in the browser / preview).
+  usePushNotifications(true);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <AppHeader />
