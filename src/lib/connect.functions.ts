@@ -116,7 +116,12 @@ export const createDriverOnboardingLink = createServerFn({ method: "POST" })
       }
       accountId = account.id;
 
-      const { error: updateError } = await supabase
+      // Stripe/payout columns on profiles are locked to the service role by a
+      // DB trigger, so persist through the admin client (scoped to self by id).
+      const { supabaseAdmin } = await import(
+        "@/integrations/supabase/client.server"
+      );
+      const { error: updateError } = await supabaseAdmin
         .from("profiles")
         .update({
           stripe_connected_account_id: accountId,
