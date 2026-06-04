@@ -147,6 +147,11 @@ function RideDetailPage() {
     ride.status === "completed" &&
     Boolean(ride.driver_id) &&
     PAYABLE.includes(ride.payment_status);
+  const canPayFee =
+    viewerRole === "rider" &&
+    ride.status === "cancelled" &&
+    Number(ride.cancellation_fee ?? 0) > 0 &&
+    PAYABLE.includes(ride.payment_status);
 
   const canReview =
     viewerRole === "rider" &&
