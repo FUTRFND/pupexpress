@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { OnboardingTour } from "@/components/onboarding-tour";
+import pupxpressLogo from "@/assets/pupxpress-logo.png.asset.json";
+import pupxpressHero from "@/assets/pupxpress-hero.png.asset.json";
+
+const TOUR_DONE_KEY = "pupx_tour_done";
 
 export const Route = createFileRoute("/")({
   // Body depends on client-only auth state (localStorage session); skip SSR for
@@ -34,13 +39,26 @@ export const Route = createFileRoute("/")({
 
 function Splash() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ background: "var(--gradient-hero)" }}
-    >
-      <div className="flex flex-col items-center gap-3 text-primary-foreground">
-        <span className="text-3xl font-bold tracking-tight">PupXpress</span>
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary-foreground/40 border-t-primary-foreground" />
+    <div className="relative flex min-h-screen flex-col overflow-hidden">
+      <img
+        src={pupxpressHero.url}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/40" />
+      <div
+        className="relative flex flex-col items-center"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 3.5rem)" }}
+      >
+        <img
+          src={pupxpressLogo.url}
+          alt="PupXpress"
+          className="h-24 w-auto drop-shadow-[0_4px_16px_rgba(0,0,0,0.15)]"
+        />
+      </div>
+      <div className="relative mt-auto flex flex-col items-center gap-3 pb-16">
+        <span className="h-7 w-7 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
       </div>
     </div>
   );
@@ -49,15 +67,44 @@ function Splash() {
 function WelcomePage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [phase, setPhase] = useState<"splash" | "tour" | "auth">("splash");
+  // Hold the splash on screen briefly so the brand moment is visible.
+  const [splashElapsed, setSplashElapsed] = useState(false);
 
-  // Only route once hydration is complete — prevents flashes & loops.
   useEffect(() => {
-    if (!loading && user) {
-      navigate({ to: "/home", replace: true });
-    }
-  }, [loading, user, navigate]);
+    const t = setTimeout(() => setSplashElapsed(true), 1900);
+    return () => clearTimeout(t);
+  }, []);
 
-  if (loading || user) return <Splash />;
+  // Once auth has resolved and the splash has shown, decide where to go.
+  useEffect(() => {
+    if (loading || !splashElapsed) return;
+    if (user) {
+      navigate({ to: "/home", replace: true });
+      return;
+    }
+    const seen =
+      typeof window !== "undefined" &&
+      localStorage.getItem(TOUR_DONE_KEY) === "1";
+    setPhase(seen ? "auth" : "tour");
+  }, [loading, splashElapsed, user, navigate]);
+
+  if (loading || !splashElapsed || phase === "splash" || user) {
+    return <Splash />;
+  }
+
+  if (phase === "tour") {
+    return (
+      <OnboardingTour
+        onDone={() => {
+          if (typeof window !== "undefined") {
+            localStorage.setItem(TOUR_DONE_KEY, "1");
+          }
+          setPhase("auth");
+        }}
+      />
+    );
+  }
 
   return <AuthScreen />;
 }
@@ -82,16 +129,24 @@ function AuthScreen() {
   return (
     <div className="flex min-h-screen flex-col">
       <header
-        className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pb-8 pt-16 text-center text-primary-foreground"
-        style={{ background: "var(--gradient-hero)" }}
+        className="relative flex flex-1 flex-col items-center overflow-hidden px-6 text-center"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 3rem)" }}
       >
-        <span className="text-4xl font-bold tracking-tight">PupXpress</span>
-        <p className="max-w-xs text-sm text-primary-foreground/80">
-          Trusted rides for your dog. Ride as a pet parent, or drive and earn.
-        </p>
+        <img
+          src={pupxpressHero.url}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+        <img
+          src={pupxpressLogo.url}
+          alt="PupXpress"
+          className="relative h-20 w-auto drop-shadow-[0_4px_16px_rgba(0,0,0,0.15)]"
+        />
       </header>
 
-      <main className="flex flex-col gap-5 rounded-t-3xl bg-background px-6 py-8 shadow-[var(--shadow-elegant)]">
+      <main className="relative z-10 -mt-8 flex flex-col gap-5 rounded-t-3xl bg-background px-6 py-8 shadow-[var(--shadow-elegant)]">
         <Button
           variant="outline"
           className="h-12 w-full text-base"
