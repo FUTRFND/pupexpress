@@ -98,7 +98,6 @@ export function OnboardingTour({ onDone }: { onDone: () => void }) {
         className="flex flex-1 snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         {SLIDES.map((slide) => {
-          const Icon = slide.icon;
           return (
             <section
               key={slide.title}
@@ -106,15 +105,19 @@ export function OnboardingTour({ onDone }: { onDone: () => void }) {
             >
               <div className="relative flex items-center justify-center">
                 <span
-                  className="absolute h-44 w-44 rounded-full opacity-60 blur-2xl"
+                  className="absolute -inset-3 rounded-[2.75rem] opacity-50 blur-2xl"
                   style={{ background: "var(--gradient-hero)" }}
                   aria-hidden
                 />
-                <div
-                  className="relative flex h-36 w-36 items-center justify-center rounded-[2rem] text-primary-foreground shadow-[var(--shadow-elegant)]"
-                  style={{ background: "var(--gradient-hero)" }}
-                >
-                  <Icon className="h-16 w-16" strokeWidth={1.6} />
+                <div className="relative h-64 w-64 overflow-hidden rounded-[2.25rem] shadow-[var(--shadow-elegant)] ring-1 ring-border/50">
+                  <img
+                    src={slide.image}
+                    alt={slide.title}
+                    width={1024}
+                    height={1024}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
               </div>
 
