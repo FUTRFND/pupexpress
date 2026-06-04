@@ -255,7 +255,8 @@ export function DriverPanel() {
           onAdvance={(action) =>
             advanceMutation.mutate({ rideId: activeRide.id, action })
           }
-          pending={advanceMutation.isPending}
+          onNoShow={() => noShowMutation.mutate(activeRide.id)}
+          pending={advanceMutation.isPending || noShowMutation.isPending}
         />
       ) : online ? (
         <AvailableRides
