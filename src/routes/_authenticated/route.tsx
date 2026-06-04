@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/app-header";
 import { AppTabBar } from "@/components/app-tab-bar";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 /**
  * The ONE and ONLY auth-to-view guard.
