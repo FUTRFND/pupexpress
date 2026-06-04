@@ -328,37 +328,7 @@ function RideCard({
         ) : null}
 
         {canCancel ? (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-10 text-destructive hover:text-destructive"
-                disabled={cancelMutation.isPending}
-              >
-                {cancelMutation.isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <XCircle className="size-4" />
-                )}
-                Cancel ride
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Cancel this ride?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This cancels your pet's ride request. You can't undo this, but
-                  you can book again anytime.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Keep ride</AlertDialogCancel>
-                <AlertDialogAction onClick={() => cancelMutation.mutate()}>
-                  Cancel ride
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <CancelRideDialog rideId={ride.id} className="h-10" />
         ) : null}
       </CardContent>
     </Card>
