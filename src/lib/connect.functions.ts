@@ -185,7 +185,12 @@ export const refreshDriverPayoutStatus = createServerFn({ method: "POST" })
         : "restricted"
       : "pending";
 
-    const { error: updateError } = await supabase
+    // Payout capability columns are locked to the service role by a DB trigger,
+    // so persist the synced flags through the admin client (scoped to self).
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { error: updateError } = await supabaseAdmin
       .from("profiles")
       .update({
         driver_charges_enabled: Boolean(account.charges_enabled),
