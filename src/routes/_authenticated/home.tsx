@@ -157,6 +157,8 @@ function RiderBooking() {
           enableFavorites
         />
 
+        <NearbyDrivers pickup={pickup} />
+
         <FareEstimate
           pickup={pickup}
           destination={destination}
