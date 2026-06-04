@@ -3,7 +3,7 @@ import { getRequest, getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getStripe, computeFees, toMinorUnits } from "./stripe.server";
+import { getStripe, computeFees, toMinorUnits, getFeeConfig } from "./stripe.server";
 import {
   ensureStripeCustomer,
   recordCheckoutPayment,
