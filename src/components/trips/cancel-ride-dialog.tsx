@@ -67,7 +67,11 @@ export function CancelRideDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rides"] });
       queryClient.invalidateQueries({ queryKey: ["ride-detail", rideId] });
-      toast.success("Ride cancelled");
+      toast.success(
+        fee > 0
+          ? `Ride cancelled — a ${formatCurrency(fee)} fee applies.`
+          : "Ride cancelled",
+      );
       setOpen(false);
       onCancelled?.();
     },
