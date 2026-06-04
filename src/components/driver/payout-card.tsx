@@ -70,11 +70,21 @@ export function DriverPayoutCard() {
   });
 
   const linkMutation = useMutation({
-    mutationFn: () => linkFn(),
-    onSuccess: ({ url }) => {
-      window.location.href = url;
+    mutationFn: async (popup: Window | null) => ({
+      ...(await linkFn()),
+      popup,
+    }),
+    onSuccess: ({ url, popup }) => {
+      if (popup && !popup.closed) {
+        popup.location.href = url;
+        return;
+      }
+
+      const opened = window.open(url, "_blank", "noopener,noreferrer");
+      if (!opened) window.location.href = url;
     },
-    onError: (err) => {
+    onError: (err, popup) => {
+      popup?.close();
       const detail =
         err instanceof Error ? err.message : "Couldn't start payout setup";
       // Keep the screen alive and surface the full Stripe detail (useful for
@@ -146,7 +156,10 @@ export function DriverPayoutCard() {
             <Button
               className="h-10"
               disabled={linkMutation.isPending || stripeBlocked}
-              onClick={() => linkMutation.mutate()}
+              onClick={() => {
+                const popup = window.open("about:blank", "_blank");
+                linkMutation.mutate(popup);
+              }}
             >
               {linkMutation.isPending ? (
                 <>
