@@ -207,8 +207,6 @@ function RideCard({
   mode: "rider" | "driver";
   rating?: RideRatingDTO;
 }) {
-  const queryClient = useQueryClient();
-  const cancelFn = useServerFn(cancelMyRide);
   const currency = "usd";
   const canPay =
     mode === "rider" &&
@@ -217,17 +215,6 @@ function RideCard({
     PAYABLE.includes(ride.payment_status);
   const canCancel = mode === "rider" && CANCELLABLE.includes(ride.status);
 
-  const cancelMutation = useMutation({
-    mutationFn: () => cancelFn({ data: { rideId: ride.id } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rides"] });
-      toast.success("Ride cancelled");
-    },
-    onError: (err) =>
-      toast.error(
-        err instanceof Error ? err.message : "Couldn't cancel this ride",
-      ),
-  });
 
   return (
     <Card>
