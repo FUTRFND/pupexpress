@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { RIDE_COLUMNS, type RideDTO } from "./rides.functions";
+import { computeCancellationFee } from "./pricing.server";
 
 /**
  * Driver-side ride lifecycle.
