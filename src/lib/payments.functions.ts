@@ -69,9 +69,11 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     if (ride.payment_status === "paid") {
       throw new Error("This ride is already paid.");
     }
+    const tip = Math.round(Math.max(0, data.tip ?? 0) * 100) / 100;
     if (!PAYABLE_PAYMENT_STATUSES.includes(ride.payment_status)) {
       // payment_pending: try to reuse the open session before making a new one.
-      if (ride.stripe_checkout_session_id) {
+      // Skip reuse when a tip is requested so the new amount is reflected.
+      if (ride.stripe_checkout_session_id && tip === 0) {
         const stripe = getStripe();
         const existing = await stripe.checkout.sessions.retrieve(
           ride.stripe_checkout_session_id,
@@ -83,9 +85,8 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     }
 
     const fees = computeFees(ride.ride_total);
-    // Round the tip to 2 decimals; it is added on top of the fare and paid
-    // out entirely to the driver (no platform fee on tips).
-    const tip = Math.round(Math.max(0, data.tip ?? 0) * 100) / 100;
+    // The tip is added on top of the fare and paid out entirely to the driver
+    // (no platform fee on tips).
     const driverEarningsWithTip = Math.round((fees.driverEarnings + tip) * 100) / 100;
     const chargedTotal = Math.round((fees.rideTotal + tip) * 100) / 100;
     const origin = resolveOrigin();
