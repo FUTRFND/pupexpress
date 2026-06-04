@@ -81,7 +81,11 @@ export function DriverPayoutCard() {
       }
 
       const opened = window.open(url, "_blank", "noopener,noreferrer");
-      if (!opened) window.location.href = url;
+      if (!opened) {
+        toast.error("Popup blocked", {
+          description: "Allow popups for this site, then try payout setup again.",
+        });
+      }
     },
     onError: (err, popup) => {
       popup?.close();
