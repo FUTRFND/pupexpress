@@ -31,12 +31,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DriverPayoutCard } from "@/components/driver/payout-card";
 import { DriverLocationSharer } from "@/components/trips/driver-location-sharer";
+import { useDriverPresence } from "@/hooks/use-driver-presence";
 
 const POLL_MS = 5000;
 
 export function DriverPanel() {
   const queryClient = useQueryClient();
   const [online, setOnline] = useState(false);
+
+  // Broadcast live location to the presence table while online so riders can
+  // see nearby-driver counts and pickup ETAs.
+  useDriverPresence(online);
+
 
   const ensureRoleFn = useServerFn(ensureDriverRole);
   const availableFn = useServerFn(listAvailableRides);
