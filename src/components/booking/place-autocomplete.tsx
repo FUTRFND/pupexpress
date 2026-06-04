@@ -34,6 +34,7 @@ export function PlaceAutocomplete({
   value,
   onSelect,
   onClear,
+  enableFavorites = false,
 }: PlaceAutocompleteProps) {
   const [query, setQuery] = useState(value?.address ?? "");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
