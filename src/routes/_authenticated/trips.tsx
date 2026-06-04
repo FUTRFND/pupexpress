@@ -285,7 +285,14 @@ function RideCard({
           </Link>
         </Button>
 
-        {canPay ? <PayRideButton rideId={ride.id} className="h-10" /> : null}
+        {canPay ? (
+          <PayRideButton
+            rideId={ride.id}
+            rideTotal={ride.ride_total}
+            currency={currency}
+            className="h-10"
+          />
+        ) : null}
 
         {mode === "rider" &&
         ride.status === "completed" &&
