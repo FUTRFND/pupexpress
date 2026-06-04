@@ -402,3 +402,33 @@ function RideRoute({ ride }: { ride: RideDTO }) {
     </div>
   );
 }
+
+function GateRequirement({
+  done,
+  label,
+  action,
+}: {
+  done: boolean;
+  label: string;
+  action?: { to: string; label: string };
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 text-sm">
+      <span className="flex items-center gap-2">
+        {done ? (
+          <CheckCircle2 className="size-4 text-primary" />
+        ) : (
+          <span className="size-4 rounded-full border-2 border-muted-foreground/40" />
+        )}
+        <span className={done ? "text-foreground" : "text-muted-foreground"}>
+          {label}
+        </span>
+      </span>
+      {!done && action ? (
+        <Button asChild size="sm" variant="outline" className="h-8">
+          <Link to={action.to}>{action.label}</Link>
+        </Button>
+      ) : null}
+    </div>
+  );
+}
