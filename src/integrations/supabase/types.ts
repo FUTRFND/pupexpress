@@ -743,6 +743,7 @@ export type Database = {
           total_uses: number
         }[]
       }
+      current_is_privileged: { Args: never; Returns: boolean }
       get_referral_leaderboard: {
         Args: { _limit?: number }
         Returns: {
