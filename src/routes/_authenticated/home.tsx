@@ -13,6 +13,7 @@ import type { SelectedPlace } from "@/lib/maps-loader";
 import { PlaceAutocomplete } from "@/components/booking/place-autocomplete";
 import { RideMap } from "@/components/booking/ride-map";
 import { FareEstimate } from "@/components/booking/fare-estimate";
+import { ScheduleRidePicker } from "@/components/booking/schedule-ride-picker";
 import { AddPetDialog } from "@/components/booking/add-pet-dialog";
 import { PromoCodeInput, type PromoState } from "@/components/booking/promo-code-input";
 import type { FareEstimateDTO } from "@/lib/fare.functions";
