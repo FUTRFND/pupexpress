@@ -142,7 +142,12 @@ export function PlaceAutocomplete({
 
   return (
     <div className="relative flex flex-col gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
+      <div className="flex items-center justify-between gap-2">
+        <Label htmlFor={id}>{label}</Label>
+        {enableFavorites && configured ? (
+          <FavoritesMenu currentPlace={value} onPick={onSelect} />
+        ) : null}
+      </div>
       <div className="relative">
         <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
