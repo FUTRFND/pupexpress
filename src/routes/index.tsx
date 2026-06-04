@@ -166,24 +166,6 @@ function AuthScreen() {
         <EmailAuth busy={busy} setBusy={setBusy} />
       </main>
     </div>
-          variant="outline"
-          className="h-12 w-full text-base"
-          onClick={handleGoogle}
-          disabled={busy}
-        >
-          <GoogleIcon />
-          Continue with Google
-        </Button>
-
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
-          or use email
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <EmailAuth busy={busy} setBusy={setBusy} />
-      </main>
-    </div>
   );
 }
 
