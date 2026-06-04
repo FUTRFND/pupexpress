@@ -132,6 +132,12 @@ export function DriverPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [online]);
 
+  // If the driver loses eligibility (or it never resolved), force them offline.
+  useEffect(() => {
+    if (online && !canGoOnline) setOnline(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canGoOnline, online]);
+
   if (roleQuery.isLoading) {
     return (
       <Card>
