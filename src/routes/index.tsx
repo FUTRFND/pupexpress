@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { OnboardingTour } from "@/components/onboarding-tour";
+import pupxpressLogo from "@/assets/pupxpress-logo.png.asset.json";
+import pupxpressHero from "@/assets/pupxpress-hero.png.asset.json";
+
+const TOUR_DONE_KEY = "pupx_tour_done";
 
 export const Route = createFileRoute("/")({
   // Body depends on client-only auth state (localStorage session); skip SSR for
