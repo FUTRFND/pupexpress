@@ -225,3 +225,84 @@ export const advanceRide = createServerFn({ method: "POST" })
 
     return updated;
   });
+
+/**
+ * Report that the rider never showed up after the driver arrived. Cancels the
+ * ride and applies the configurable no-show fee, splitting it so the driver is
+ * compensated for the wasted trip. Scoped to the assigned driver and only valid
+ * from the `driver_arrived` state.
+ */
+export const reportRiderNoShow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ rideId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<RideDTO> => {
+    const { supabase, userId } = context;
+
+    // RLS-scoped read confirms the driver owns this ride and its state.
+    const { data: current, error: readError } = await supabase
+      .from("rides")
+      .select("status, accepted_at, rider_id")
+      .eq("id", data.rideId)
+      .eq("driver_id", userId)
+      .maybeSingle();
+    if (readError) throw new Error(readError.message);
+    if (!current) throw new Error("Ride not found.");
+    if (current.status !== "driver_arrived") {
+      throw new Error(
+        "You can only report a no-show once you've arrived at the pickup.",
+      );
+    }
+
+    const fee = computeCancellationFee({
+      status: current.status,
+      acceptedAt: current.accepted_at,
+      cancelledBy: "driver",
+    });
+
+    // Financial columns are locked to the service role by a DB trigger, so the
+    // no-show write goes through the admin client; the id + driver_id + status
+    // predicate keeps it scoped to the ride we confirmed the caller owns.
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { data: ride, error } = await supabaseAdmin
+      .from("rides")
+      .update({
+        status: "cancelled",
+        cancellation_reason: "Rider no-show",
+        cancelled_at: new Date().toISOString(),
+        cancelled_by: userId,
+        cancellation_fee: fee.fee,
+        driver_earnings: fee.driverShare,
+        platform_fee: fee.platformShare,
+      })
+      .eq("id", data.rideId)
+      .eq("driver_id", userId)
+      .eq("status", "driver_arrived")
+      .select(RIDE_COLUMNS)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!ride) {
+      throw new Error("That ride is no longer in a state you can update.");
+    }
+
+    const updated = ride as RideDTO;
+    const { createNotifications } = await import("./notifications.server");
+    await createNotifications([
+      {
+        user_id: updated.rider_id,
+        title: "Ride cancelled — no-show",
+        body:
+          fee.fee > 0
+            ? "Your driver reported a no-show at the pickup. A no-show fee applies."
+            : "Your driver reported a no-show at the pickup.",
+        type: "ride",
+        ride_id: updated.id,
+      },
+    ]);
+
+    return updated;
+  });
