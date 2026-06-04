@@ -24,6 +24,7 @@ import { DEMO_DRIVER_NAME } from "@/lib/demo.functions";
 import { RideTimeline } from "@/components/trips/ride-timeline";
 import { DriverLocationSharer } from "@/components/trips/driver-location-sharer";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
+import { PayCancellationFeeButton } from "@/components/payments/pay-cancellation-fee-button";
 import { RideReceipt } from "@/components/trips/ride-receipt";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
