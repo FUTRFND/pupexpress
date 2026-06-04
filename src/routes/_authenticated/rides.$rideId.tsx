@@ -15,7 +15,7 @@ import {
 import { listMyRideRatings } from "@/lib/ratings.functions";
 import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
 import { isActiveRide, rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
-import { formatCurrency } from "@/lib/format";
+
 import { TrackMap } from "@/components/trips/track-map";
 import { RideEta } from "@/components/trips/ride-eta";
 import { DriverCard } from "@/components/trips/driver-card";
