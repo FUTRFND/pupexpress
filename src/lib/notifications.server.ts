@@ -35,7 +35,42 @@ export async function createNotifications(
   );
   if (error) {
     console.error("Failed to create notifications:", error.message);
+    return;
   }
+
+  // Best-effort push delivery. Group rows that share the same message so we
+  // issue one FCM batch per distinct payload instead of one per recipient.
+  const groups = new Map<
+    string,
+    { title: string; body: string | null; type: string | null; ride_id: string | null; userIds: string[] }
+  >();
+  for (const r of rows) {
+    const key = `${r.title}\u0000${r.body ?? ""}\u0000${r.type ?? ""}\u0000${r.ride_id ?? ""}`;
+    const existing = groups.get(key);
+    if (existing) {
+      existing.userIds.push(r.user_id);
+    } else {
+      groups.set(key, {
+        title: r.title,
+        body: r.body ?? null,
+        type: r.type ?? null,
+        ride_id: r.ride_id ?? null,
+        userIds: [r.user_id],
+      });
+    }
+  }
+  await Promise.allSettled(
+    Array.from(groups.values()).map((g) =>
+      sendPushToUsers(g.userIds, {
+        title: g.title,
+        body: g.body,
+        data: {
+          ...(g.type ? { type: g.type } : {}),
+          ...(g.ride_id ? { ride_id: g.ride_id } : {}),
+        },
+      }),
+    ),
+  );
 }
 
 /**
