@@ -145,13 +145,23 @@ export const listMyRides = createServerFn({ method: "GET" })
 export const cancelMyRide = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ rideId: z.string().uuid() }).parse(input),
+    z
+      .object({
+        rideId: z.string().uuid(),
+        reason: z.string().trim().max(300).optional().nullable(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }): Promise<RideDTO> => {
     const { supabase, userId } = context;
     const { data: ride, error } = await supabase
       .from("rides")
-      .update({ status: "cancelled" })
+      .update({
+        status: "cancelled",
+        cancellation_reason: data.reason?.trim() || null,
+        cancelled_at: new Date().toISOString(),
+        cancelled_by: userId,
+      })
       .eq("id", data.rideId)
       .eq("rider_id", userId)
       .in("status", ["requested", "accepted", "driver_en_route", "driver_arrived"])
@@ -169,7 +179,9 @@ export const cancelMyRide = createServerFn({ method: "POST" })
         {
           user_id: cancelled.driver_id,
           title: "Ride cancelled by rider",
-          body: "The rider cancelled this ride. It's been removed from your trips.",
+          body: cancelled.cancellation_reason
+            ? `The rider cancelled: "${cancelled.cancellation_reason}"`
+            : "The rider cancelled this ride. It's been removed from your trips.",
           type: "ride",
           ride_id: cancelled.id,
         },
