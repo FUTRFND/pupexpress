@@ -4,6 +4,7 @@ import { Loader2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { FavoritesMenu } from "@/components/booking/favorites-menu";
 import {
   loadGoogleMaps,
   isMapsConfigured,
@@ -23,6 +24,7 @@ interface PlaceAutocompleteProps {
   value: SelectedPlace | null;
   onSelect: (place: SelectedPlace) => void;
   onClear: () => void;
+  enableFavorites?: boolean;
 }
 
 export function PlaceAutocomplete({
@@ -32,6 +34,7 @@ export function PlaceAutocomplete({
   value,
   onSelect,
   onClear,
+  enableFavorites = false,
 }: PlaceAutocompleteProps) {
   const [query, setQuery] = useState(value?.address ?? "");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -139,7 +142,12 @@ export function PlaceAutocomplete({
 
   return (
     <div className="relative flex flex-col gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
+      <div className="flex items-center justify-between gap-2">
+        <Label htmlFor={id}>{label}</Label>
+        {enableFavorites && configured ? (
+          <FavoritesMenu currentPlace={value} onPick={onSelect} />
+        ) : null}
+      </div>
       <div className="relative">
         <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input

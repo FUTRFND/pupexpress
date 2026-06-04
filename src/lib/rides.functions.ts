@@ -32,10 +32,11 @@ export interface RideDTO {
   cancellation_reason: string | null;
   cancelled_at: string | null;
   cancelled_by: string | null;
+  scheduled_for: string | null;
 }
 
 export const RIDE_COLUMNS =
-  "id, status, payment_status, transfer_status, pickup_address, destination_address, pickup_lat, pickup_lng, destination_lat, destination_lng, pet_id, rider_id, driver_id, notes, ride_total, platform_fee, driver_earnings, tip_amount, created_at, accepted_at, started_at, completed_at, paid_at, transferred_at, cancellation_reason, cancelled_at, cancelled_by";
+  "id, status, payment_status, transfer_status, pickup_address, destination_address, pickup_lat, pickup_lng, destination_lat, destination_lng, pet_id, rider_id, driver_id, notes, ride_total, platform_fee, driver_earnings, tip_amount, created_at, accepted_at, started_at, completed_at, paid_at, transferred_at, cancellation_reason, cancelled_at, cancelled_by, scheduled_for";
 
 const locationSchema = z.object({
   address: z.string().trim().min(1, "Address is required").max(300),
@@ -56,6 +57,16 @@ const createRideSchema = z.object({
     .regex(/^[A-Za-z0-9-]+$/)
     .optional()
     .nullable(),
+  // ISO timestamp for a future scheduled pickup. Null/omitted = ride now.
+  scheduledFor: z
+    .string()
+    .datetime({ offset: true })
+    .optional()
+    .nullable()
+    .refine(
+      (v) => !v || new Date(v).getTime() > Date.now() + 5 * 60 * 1000,
+      "Scheduled time must be at least 5 minutes from now.",
+    ),
 });
 
 /** Create a ride request for the signed-in rider. */
@@ -104,6 +115,7 @@ export const createRide = createServerFn({ method: "POST" })
         status: "requested",
         payment_status: "unpaid",
         transfer_status: "not_ready",
+        scheduled_for: data.scheduledFor ?? null,
       })
       .select(RIDE_COLUMNS)
       .single();
@@ -112,16 +124,20 @@ export const createRide = createServerFn({ method: "POST" })
 
     const created = ride as RideDTO;
     // Let available drivers know there's a new ride to claim (best-effort).
-    const { notifyAvailableDrivers } = await import("./notifications.server");
-    await notifyAvailableDrivers(
-      {
-        title: "New ride request",
-        body: `Pickup at ${created.pickup_address}. Tap to view and accept.`,
-        type: "ride",
-        ride_id: created.id,
-      },
-      userId,
-    );
+    // Scheduled rides are surfaced to drivers closer to the pickup time, so we
+    // skip the immediate broadcast for them.
+    if (!created.scheduled_for) {
+      const { notifyAvailableDrivers } = await import("./notifications.server");
+      await notifyAvailableDrivers(
+        {
+          title: "New ride request",
+          body: `Pickup at ${created.pickup_address}. Tap to view and accept.`,
+          type: "ride",
+          ride_id: created.id,
+        },
+        userId,
+      );
+    }
 
     return created;
   });

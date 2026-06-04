@@ -3,7 +3,7 @@ import { createFileRoute, useSearch, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, MapPin, Navigation, MessageCircle } from "lucide-react";
+import { Loader2, MapPin, Navigation, MessageCircle, CalendarClock } from "lucide-react";
 
 import { useMode } from "@/hooks/use-mode";
 import { listMyRides, type RideDTO } from "@/lib/rides.functions";
@@ -250,6 +250,15 @@ function RideCard({
             </div>
           </div>
         </div>
+
+        {ride.scheduled_for ? (
+          <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm text-primary">
+            <CalendarClock className="size-4 shrink-0" />
+            <span className="font-medium">
+              Scheduled for {new Date(ride.scheduled_for).toLocaleString()}
+            </span>
+          </div>
+        ) : null}
 
         <RideTimeline ride={ride} />
 

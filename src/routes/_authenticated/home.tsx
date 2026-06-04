@@ -13,6 +13,7 @@ import type { SelectedPlace } from "@/lib/maps-loader";
 import { PlaceAutocomplete } from "@/components/booking/place-autocomplete";
 import { RideMap } from "@/components/booking/ride-map";
 import { FareEstimate } from "@/components/booking/fare-estimate";
+import { ScheduleRidePicker } from "@/components/booking/schedule-ride-picker";
 import { AddPetDialog } from "@/components/booking/add-pet-dialog";
 import { PromoCodeInput, type PromoState } from "@/components/booking/promo-code-input";
 import type { FareEstimateDTO } from "@/lib/fare.functions";
@@ -57,6 +58,8 @@ function RiderBooking() {
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [petId, setPetId] = useState<string | null>(null);
   const [promo, setPromo] = useState<PromoState | null>(null);
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduledFor, setScheduledFor] = useState("");
   const [, setQuote] = useState<FareEstimateDTO | null>(null);
   const handleQuote = useCallback(
     (q: FareEstimateDTO | null) => setQuote(q),
@@ -73,6 +76,16 @@ function RiderBooking() {
   const rideMutation = useMutation({
     mutationFn: () => {
       if (!pickup || !destination) throw new Error("Pickup and destination required");
+      let scheduledIso: string | null = null;
+      if (scheduleEnabled) {
+        if (!scheduledFor) throw new Error("Pick a date and time, or turn off scheduling.");
+        const when = new Date(scheduledFor);
+        if (Number.isNaN(when.getTime())) throw new Error("That pickup time isn't valid.");
+        if (when.getTime() <= Date.now() + 5 * 60 * 1000) {
+          throw new Error("Choose a pickup time at least 5 minutes from now.");
+        }
+        scheduledIso = when.toISOString();
+      }
       return createRideFn({
         data: {
           pickup: {
@@ -89,16 +102,23 @@ function RiderBooking() {
           },
           petId: petId ?? null,
           referralCode: promo?.valid ? promo.code : null,
+          scheduledFor: scheduledIso,
         },
       });
     },
     onSuccess: () => {
-      toast.success("Ride requested! Finding a driver…");
+      toast.success(
+        scheduleEnabled
+          ? "Ride scheduled! We'll find a driver before pickup."
+          : "Ride requested! Finding a driver…",
+      );
       queryClient.invalidateQueries({ queryKey: ["rides"] });
       setPickup(null);
       setDestination(null);
       setPetId(null);
       setPromo(null);
+      setScheduleEnabled(false);
+      setScheduledFor("");
       navigate({ to: "/trips" });
     },
     onError: (err) => {
@@ -123,6 +143,7 @@ function RiderBooking() {
           value={pickup}
           onSelect={setPickup}
           onClear={() => setPickup(null)}
+          enableFavorites
         />
 
         <PlaceAutocomplete
@@ -132,12 +153,20 @@ function RiderBooking() {
           value={destination}
           onSelect={setDestination}
           onClear={() => setDestination(null)}
+          enableFavorites
         />
 
         <FareEstimate
           pickup={pickup}
           destination={destination}
           onQuote={handleQuote}
+        />
+
+        <ScheduleRidePicker
+          enabled={scheduleEnabled}
+          value={scheduledFor}
+          onToggle={setScheduleEnabled}
+          onChange={setScheduledFor}
         />
 
 
@@ -158,8 +187,11 @@ function RiderBooking() {
         >
           {rideMutation.isPending ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Requesting…
+              <Loader2 className="size-4 animate-spin" />{" "}
+              {scheduleEnabled ? "Scheduling…" : "Requesting…"}
             </>
+          ) : scheduleEnabled ? (
+            "Schedule ride"
           ) : (
             "Request ride"
           )}
