@@ -28,7 +28,6 @@ import { Route as AuthenticatedCommunityGuidelinesRouteImport } from './routes/_
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedReferralsIndexRouteImport } from './routes/_authenticated/referrals.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
-import { Route as ApiPublicStripeAuditRouteImport } from './routes/api/public/stripe-audit'
 import { Route as AuthenticatedRidesRideIdRouteImport } from './routes/_authenticated/rides.$rideId'
 import { Route as AuthenticatedReferralsLeaderboardRouteImport } from './routes/_authenticated/referrals.leaderboard'
 import { Route as AuthenticatedDriverVerifyRouteImport } from './routes/_authenticated/driver.verify'
@@ -132,11 +131,6 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicStripeAuditRoute = ApiPublicStripeAuditRouteImport.update({
-  id: '/api/public/stripe-audit',
-  path: '/api/public/stripe-audit',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRidesRideIdRoute =
   AuthenticatedRidesRideIdRouteImport.update({
     id: '/rides/$rideId',
@@ -176,7 +170,6 @@ export interface FileRoutesByFullPath {
   '/driver/verify': typeof AuthenticatedDriverVerifyRoute
   '/referrals/leaderboard': typeof AuthenticatedReferralsLeaderboardRoute
   '/rides/$rideId': typeof AuthenticatedRidesRideIdRoute
-  '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/referrals/': typeof AuthenticatedReferralsIndexRoute
 }
@@ -200,7 +193,6 @@ export interface FileRoutesByTo {
   '/driver/verify': typeof AuthenticatedDriverVerifyRoute
   '/referrals/leaderboard': typeof AuthenticatedReferralsLeaderboardRoute
   '/rides/$rideId': typeof AuthenticatedRidesRideIdRoute
-  '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/referrals': typeof AuthenticatedReferralsIndexRoute
 }
@@ -226,7 +218,6 @@ export interface FileRoutesById {
   '/_authenticated/driver/verify': typeof AuthenticatedDriverVerifyRoute
   '/_authenticated/referrals/leaderboard': typeof AuthenticatedReferralsLeaderboardRoute
   '/_authenticated/rides/$rideId': typeof AuthenticatedRidesRideIdRoute
-  '/api/public/stripe-audit': typeof ApiPublicStripeAuditRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/referrals/': typeof AuthenticatedReferralsIndexRoute
 }
@@ -252,7 +243,6 @@ export interface FileRouteTypes {
     | '/driver/verify'
     | '/referrals/leaderboard'
     | '/rides/$rideId'
-    | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
     | '/referrals/'
   fileRoutesByTo: FileRoutesByTo
@@ -276,7 +266,6 @@ export interface FileRouteTypes {
     | '/driver/verify'
     | '/referrals/leaderboard'
     | '/rides/$rideId'
-    | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
     | '/referrals'
   id:
@@ -301,7 +290,6 @@ export interface FileRouteTypes {
     | '/_authenticated/driver/verify'
     | '/_authenticated/referrals/leaderboard'
     | '/_authenticated/rides/$rideId'
-    | '/api/public/stripe-audit'
     | '/api/public/stripe-webhook'
     | '/_authenticated/referrals/'
   fileRoutesById: FileRoutesById
@@ -309,7 +297,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  ApiPublicStripeAuditRoute: typeof ApiPublicStripeAuditRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
@@ -448,13 +435,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/stripe-audit': {
-      id: '/api/public/stripe-audit'
-      path: '/api/public/stripe-audit'
-      fullPath: '/api/public/stripe-audit'
-      preLoaderRoute: typeof ApiPublicStripeAuditRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/rides/$rideId': {
       id: '/_authenticated/rides/$rideId'
       path: '/rides/$rideId'
@@ -531,19 +511,8 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  ApiPublicStripeAuditRoute: ApiPublicStripeAuditRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
