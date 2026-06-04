@@ -9,6 +9,7 @@ import {
 import {
   markRidePaid,
   markPaymentFailed,
+  markCancellationFeePaid,
   syncConnectAccount,
 } from "@/lib/payments.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -77,10 +78,12 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
         typeof session.payment_intent === "string"
           ? session.payment_intent
           : (session.payment_intent?.id ?? null);
-      await markRidePaid(rideId, {
-        paymentIntentId,
-        checkoutSessionId: session.id,
-      });
+      const patch = { paymentIntentId, checkoutSessionId: session.id };
+      if (session.metadata?.type === "cancellation_fee") {
+        await markCancellationFeePaid(rideId, patch);
+      } else {
+        await markRidePaid(rideId, patch);
+      }
       break;
     }
 
@@ -88,7 +91,11 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       const pi = event.data.object as Stripe.PaymentIntent;
       const rideId = pi.metadata?.ride_id;
       if (!rideId) return;
-      await markRidePaid(rideId, { paymentIntentId: pi.id });
+      if (pi.metadata?.type === "cancellation_fee") {
+        await markCancellationFeePaid(rideId, { paymentIntentId: pi.id });
+      } else {
+        await markRidePaid(rideId, { paymentIntentId: pi.id });
+      }
       break;
     }
 

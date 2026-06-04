@@ -147,4 +147,95 @@ export async function quoteFare(
   return computeFareFromRoute(route);
 }
 
+// ---------------------------------------------------------------------------
+// Configurable cancellation / no-show fee policy
+// ---------------------------------------------------------------------------
+// Like every other commercial knob, cancellation fees are NEVER hardcoded —
+// each value is an env var with a placeholder default that can be tuned before
+// go-live:
+//
+//   CANCEL_FEE_GRACE_SECONDS  free-cancel window after a driver accepts (seconds)
+//   CANCEL_FEE_AMOUNT         rider late-cancellation fee (currency units)
+//   NO_SHOW_FEE_AMOUNT        driver-reported rider no-show fee (currency units)
+//   CANCEL_FEE_DRIVER_SHARE   fraction of the fee paid to the driver (0..1)
+
+export interface CancellationPolicy {
+  graceSeconds: number;
+  lateCancelFee: number;
+  noShowFee: number;
+  driverShare: number;
+}
+
+export function getCancellationPolicy(): CancellationPolicy {
+  return {
+    graceSeconds: numEnv("CANCEL_FEE_GRACE_SECONDS", 120),
+    lateCancelFee: numEnv("CANCEL_FEE_AMOUNT", 5),
+    noShowFee: numEnv("NO_SHOW_FEE_AMOUNT", 10),
+    driverShare: Math.min(Math.max(numEnv("CANCEL_FEE_DRIVER_SHARE", 0.8), 0), 1),
+  };
+}
+
+export type CancellationReason = "free" | "late_cancel" | "no_show";
+
+export interface CancellationFeeResult {
+  /** Total fee charged to the rider. */
+  fee: number;
+  /** Portion of the fee that is paid out to the driver. */
+  driverShare: number;
+  /** Portion of the fee the platform keeps. */
+  platformShare: number;
+  reason: CancellationReason;
+}
+
+function splitCancellationFee(
+  fee: number,
+  driverShareFraction: number,
+  reason: CancellationReason,
+): CancellationFeeResult {
+  const f = round2(fee);
+  const driverShare = round2(f * driverShareFraction);
+  const platformShare = round2(f - driverShare);
+  return { fee: f, driverShare, platformShare, reason };
+}
+
+/**
+ * Decide what (if any) cancellation fee applies, based on who is cancelling and
+ * the ride's current state. Pure + deterministic so it can run on cancel, on
+ * no-show reporting, and when quoting the fee to the rider beforehand.
+ *
+ *   - Rider, ride still `requested` (no driver) → free.
+ *   - Rider, within the grace window after a driver accepted → free.
+ *   - Rider, after the grace window → late-cancellation fee.
+ *   - Driver, rider didn't show after arrival (`driver_arrived`) → no-show fee.
+ */
+export function computeCancellationFee(params: {
+  status: string;
+  acceptedAt: string | null;
+  cancelledBy: "rider" | "driver";
+}): CancellationFeeResult {
+  const policy = getCancellationPolicy();
+  const free: CancellationFeeResult = {
+    fee: 0,
+    driverShare: 0,
+    platformShare: 0,
+    reason: "free",
+  };
+
+  if (params.cancelledBy === "driver") {
+    if (params.status === "driver_arrived" && policy.noShowFee > 0) {
+      return splitCancellationFee(policy.noShowFee, policy.driverShare, "no_show");
+    }
+    return free;
+  }
+
+  // Rider cancellation.
+  if (params.status === "requested" || !params.acceptedAt) return free;
+
+  const elapsedSeconds =
+    (Date.now() - new Date(params.acceptedAt).getTime()) / 1000;
+  if (elapsedSeconds <= policy.graceSeconds) return free;
+  if (policy.lateCancelFee <= 0) return free;
+  return splitCancellationFee(policy.lateCancelFee, policy.driverShare, "late_cancel");
+}
+
 export { getFeeConfig };

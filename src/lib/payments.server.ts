@@ -138,6 +138,129 @@ export async function markPaymentFailed(rideId: string): Promise<void> {
 }
 
 /**
+ * Mark a cancellation/no-show fee paid (idempotent) and pay the driver their
+ * share. Mirrors `markRidePaid` but for cancelled rides that carry a
+ * `cancellation_fee`.
+ */
+export async function markCancellationFeePaid(
+  rideId: string,
+  patch: PaidPatch,
+): Promise<void> {
+  const update: {
+    payment_status: "paid";
+    paid_at: string;
+    stripe_payment_intent_id?: string;
+    stripe_checkout_session_id?: string;
+  } = {
+    payment_status: "paid",
+    paid_at: new Date().toISOString(),
+  };
+  if (patch.paymentIntentId) update.stripe_payment_intent_id = patch.paymentIntentId;
+  if (patch.checkoutSessionId) update.stripe_checkout_session_id = patch.checkoutSessionId;
+
+  const { data, error } = await supabaseAdmin
+    .from("rides")
+    .update(update)
+    .eq("id", rideId)
+    .neq("payment_status", "paid")
+    .select("id")
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  await supabaseAdmin
+    .from("payments")
+    .update({
+      status: "paid",
+      stripe_payment_intent_id: patch.paymentIntentId ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("ride_id", rideId);
+
+  // Only attempt the payout on the call that actually flipped it to paid.
+  if (data) {
+    await maybeTransferCancellationFee(rideId);
+  }
+}
+
+/**
+ * Shared payout step: verify the driver can receive payouts, create the Stripe
+ * Connect transfer, and reconcile the ride + driver_earnings ledger. The ride
+ * must already be atomically claimed into `transfer_pending` by the caller.
+ * On ineligibility it resets the ride to `not_ready` so it can be retried.
+ */
+async function payoutDriver(
+  rideId: string,
+  driverId: string,
+  amount: number,
+): Promise<void> {
+  const { data: driver, error: driverError } = await supabaseAdmin
+    .from("profiles")
+    .select("stripe_connected_account_id, driver_payouts_enabled")
+    .eq("id", driverId)
+    .single();
+
+  if (driverError) throw new Error(driverError.message);
+
+  const eligible =
+    Boolean(driver?.stripe_connected_account_id) &&
+    Boolean(driver?.driver_payouts_enabled) &&
+    amount > 0;
+
+  if (!eligible) {
+    // Reset to not_ready so it can be retried once onboarding completes.
+    await supabaseAdmin
+      .from("rides")
+      .update({ transfer_status: "not_ready" })
+      .eq("id", rideId)
+      .eq("transfer_status", "transfer_pending");
+    return;
+  }
+
+  const cfg = getFeeConfig();
+  try {
+    const stripe = getStripe();
+    const transfer = await stripe.transfers.create({
+      amount: toMinorUnits(amount),
+      currency: cfg.currency,
+      destination: driver!.stripe_connected_account_id as string,
+      transfer_group: `ride_${rideId}`,
+      metadata: { ride_id: rideId, driver_id: driverId },
+    });
+
+    await supabaseAdmin
+      .from("rides")
+      .update({
+        transfer_status: "driver_paid",
+        stripe_transfer_id: transfer.id,
+        transferred_at: new Date().toISOString(),
+      })
+      .eq("id", rideId);
+
+    // Ledger row (unique per ride; ignore duplicate on conflict).
+    await supabaseAdmin.from("driver_earnings").upsert(
+      {
+        ride_id: rideId,
+        driver_id: driverId,
+        amount,
+        currency: cfg.currency,
+        transfer_status: "driver_paid",
+        stripe_transfer_id: transfer.id,
+        transferred_at: new Date().toISOString(),
+      },
+      { onConflict: "ride_id" },
+    );
+  } catch (err) {
+    await supabaseAdmin
+      .from("rides")
+      .update({ transfer_status: "transfer_failed" })
+      .eq("id", rideId);
+    console.error("Driver transfer failed", rideId, err);
+    throw err;
+  }
+}
+
+/**
  * Create a Stripe Connect transfer to the driver, if and only if the ride is
  * completed, paid, has an assigned driver with payouts enabled, and has not
  * already been transferred. The atomic claim (`not_ready` -> `transfer_pending`)
@@ -171,74 +294,49 @@ export async function maybeCreateTransfer(rideId: string): Promise<void> {
   if (claimError) throw new Error(claimError.message);
   if (!claimed) return; // not eligible yet, or already claimed/transferred.
 
-  const driverId = claimed.driver_id as string;
-  const driverEarnings = Number(claimed.driver_earnings ?? 0);
+  await payoutDriver(
+    rideId,
+    claimed.driver_id as string,
+    Number(claimed.driver_earnings ?? 0),
+  );
+}
 
-  // Verify the driver is actually able to receive payouts.
-  const { data: driver, error: driverError } = await supabaseAdmin
-    .from("profiles")
-    .select("stripe_connected_account_id, driver_payouts_enabled")
-    .eq("id", driverId)
-    .single();
-
-  if (driverError) throw new Error(driverError.message);
-
-  const eligible =
-    Boolean(driver?.stripe_connected_account_id) &&
-    Boolean(driver?.driver_payouts_enabled) &&
-    driverEarnings > 0;
-
-  if (!eligible) {
-    // Reset to not_ready so it can be retried once onboarding completes.
-    await supabaseAdmin
-      .from("rides")
-      .update({ transfer_status: "not_ready" })
-      .eq("id", rideId)
-      .eq("transfer_status", "transfer_pending");
+/**
+ * Pay the driver their share of a collected cancellation/no-show fee. Same
+ * atomic-claim + single-transfer guarantees as `maybeCreateTransfer`, but gated
+ * on a cancelled ride that carries a paid cancellation fee.
+ */
+export async function maybeTransferCancellationFee(
+  rideId: string,
+): Promise<void> {
+  const safety = getStripeSafety();
+  if (!safety.actionsAllowed) {
+    console.warn(
+      `[stripe:safety] Cancellation-fee transfer skipped for ride ${rideId}. ${safety.reason}`,
+    );
     return;
   }
 
-  const cfg = getFeeConfig();
-  try {
-    const stripe = getStripe();
-    const transfer = await stripe.transfers.create({
-      amount: toMinorUnits(driverEarnings),
-      currency: cfg.currency,
-      destination: driver!.stripe_connected_account_id as string,
-      transfer_group: `ride_${rideId}`,
-      metadata: { ride_id: rideId, driver_id: driverId },
-    });
+  const { data: claimed, error: claimError } = await supabaseAdmin
+    .from("rides")
+    .update({ transfer_status: "transfer_pending" })
+    .eq("id", rideId)
+    .eq("status", "cancelled")
+    .eq("payment_status", "paid")
+    .gt("cancellation_fee", 0)
+    .not("driver_id", "is", null)
+    .eq("transfer_status", "not_ready")
+    .select("id, driver_id, driver_earnings")
+    .maybeSingle();
 
-    await supabaseAdmin
-      .from("rides")
-      .update({
-        transfer_status: "driver_paid",
-        stripe_transfer_id: transfer.id,
-        transferred_at: new Date().toISOString(),
-      })
-      .eq("id", rideId);
+  if (claimError) throw new Error(claimError.message);
+  if (!claimed) return;
 
-    // Ledger row (unique per ride; ignore duplicate on conflict).
-    await supabaseAdmin.from("driver_earnings").upsert(
-      {
-        ride_id: rideId,
-        driver_id: driverId,
-        amount: driverEarnings,
-        currency: cfg.currency,
-        transfer_status: "driver_paid",
-        stripe_transfer_id: transfer.id,
-        transferred_at: new Date().toISOString(),
-      },
-      { onConflict: "ride_id" },
-    );
-  } catch (err) {
-    await supabaseAdmin
-      .from("rides")
-      .update({ transfer_status: "transfer_failed" })
-      .eq("id", rideId);
-    console.error("Driver transfer failed", rideId, err);
-    throw err;
-  }
+  await payoutDriver(
+    rideId,
+    claimed.driver_id as string,
+    Number(claimed.driver_earnings ?? 0),
+  );
 }
 
 /** Sync a connected account's capabilities back onto the driver profile. */

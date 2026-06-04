@@ -24,6 +24,7 @@ import { DEMO_DRIVER_NAME } from "@/lib/demo.functions";
 import { RideTimeline } from "@/components/trips/ride-timeline";
 import { DriverLocationSharer } from "@/components/trips/driver-location-sharer";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
+import { PayCancellationFeeButton } from "@/components/payments/pay-cancellation-fee-button";
 import { RideReceipt } from "@/components/trips/ride-receipt";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -146,6 +147,11 @@ function RideDetailPage() {
     ride.status === "completed" &&
     Boolean(ride.driver_id) &&
     PAYABLE.includes(ride.payment_status);
+  const canPayFee =
+    viewerRole === "rider" &&
+    ride.status === "cancelled" &&
+    Number(ride.cancellation_fee ?? 0) > 0 &&
+    PAYABLE.includes(ride.payment_status);
 
   const canReview =
     viewerRole === "rider" &&
@@ -237,6 +243,14 @@ function RideDetailPage() {
           rideId={ride.id}
           rideTotal={ride.ride_total}
           className="h-11"
+        />
+      ) : null}
+
+      {canPayFee ? (
+        <PayCancellationFeeButton
+          rideId={ride.id}
+          fee={Number(ride.cancellation_fee ?? 0)}
+          className="h-11 w-full"
         />
       ) : null}
 

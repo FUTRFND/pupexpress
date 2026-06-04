@@ -20,6 +20,7 @@ import {
   listMyDriverRides,
   acceptRide,
   advanceRide,
+  reportRiderNoShow,
 } from "@/lib/driver.functions";
 import { getMyVerification } from "@/lib/driver-verification.functions";
 import { getDriverPayoutStatus } from "@/lib/connect.functions";
@@ -42,6 +43,7 @@ export function DriverPanel() {
   const assignedFn = useServerFn(listMyDriverRides);
   const acceptFn = useServerFn(acceptRide);
   const advanceFn = useServerFn(advanceRide);
+  const noShowFn = useServerFn(reportRiderNoShow);
   const verificationFn = useServerFn(getMyVerification);
   const payoutFn = useServerFn(getDriverPayoutStatus);
 
@@ -124,6 +126,18 @@ export function DriverPanel() {
     },
     onError: (err) =>
       toast.error(err instanceof Error ? err.message : "Couldn't update ride"),
+  });
+
+  const noShowMutation = useMutation({
+    mutationFn: (rideId: string) => noShowFn({ data: { rideId } }),
+    onSuccess: () => {
+      toast.success("No-show reported — a fee was applied.");
+      invalidateAll();
+    },
+    onError: (err) =>
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't report no-show",
+      ),
   });
 
   // Keep available list fresh the moment a driver goes online.
@@ -241,7 +255,8 @@ export function DriverPanel() {
           onAdvance={(action) =>
             advanceMutation.mutate({ rideId: activeRide.id, action })
           }
-          pending={advanceMutation.isPending}
+          onNoShow={() => noShowMutation.mutate(activeRide.id)}
+          pending={advanceMutation.isPending || noShowMutation.isPending}
         />
       ) : online ? (
         <AvailableRides
@@ -326,10 +341,12 @@ function AvailableRides({
 function ActiveRideCard({
   ride,
   onAdvance,
+  onNoShow,
   pending,
 }: {
   ride: RideDTO;
   onAdvance: (action: "en_route" | "arrive" | "complete" | "cancel") => void;
+  onNoShow: () => void;
   pending: boolean;
 }) {
   return (
@@ -353,9 +370,19 @@ function ActiveRideCard({
             </Button>
           )}
           {ride.status === "driver_arrived" && (
-            <div className="flex items-center justify-center gap-2 rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" /> Waiting for the rider to start the ride…
-            </div>
+            <>
+              <div className="flex items-center justify-center gap-2 rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" /> Waiting for the rider to start the ride…
+              </div>
+              <Button
+                variant="outline"
+                className="h-10 text-destructive hover:text-destructive"
+                disabled={pending}
+                onClick={onNoShow}
+              >
+                Report rider no-show
+              </Button>
+            </>
           )}
           {ride.status === "in_progress" && (
             <Button className="h-11" disabled={pending} onClick={() => onAdvance("complete")}>
