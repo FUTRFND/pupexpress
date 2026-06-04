@@ -207,19 +207,8 @@ function RideDetailPage() {
 
       {driverInfo ? <DriverCard driver={driverInfo} /> : null}
 
+      <RideReceipt ride={ride} viewerRole={viewerRole} />
 
-      {ride.ride_total > 0 ? (
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
-            {viewerRole === "driver" ? "Your earnings" : "Ride total"}
-          </span>
-          <span className="font-semibold">
-            {formatCurrency(
-              viewerRole === "driver" ? ride.driver_earnings : ride.ride_total,
-            )}
-          </span>
-        </div>
-      ) : null}
 
       {viewerRole === "driver" && active ? (
         <DriverLocationSharer rideId={ride.id} />
