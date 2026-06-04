@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { sendPushToUsers } from "@/lib/push.server";
 
 /**
  * Server-only helper for creating in-app notifications.
