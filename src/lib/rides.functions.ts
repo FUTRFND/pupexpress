@@ -57,6 +57,16 @@ const createRideSchema = z.object({
     .regex(/^[A-Za-z0-9-]+$/)
     .optional()
     .nullable(),
+  // ISO timestamp for a future scheduled pickup. Null/omitted = ride now.
+  scheduledFor: z
+    .string()
+    .datetime({ offset: true })
+    .optional()
+    .nullable()
+    .refine(
+      (v) => !v || new Date(v).getTime() > Date.now() + 5 * 60 * 1000,
+      "Scheduled time must be at least 5 minutes from now.",
+    ),
 });
 
 /** Create a ride request for the signed-in rider. */
