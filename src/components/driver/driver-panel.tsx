@@ -43,6 +43,7 @@ export function DriverPanel() {
   const assignedFn = useServerFn(listMyDriverRides);
   const acceptFn = useServerFn(acceptRide);
   const advanceFn = useServerFn(advanceRide);
+  const noShowFn = useServerFn(reportRiderNoShow);
   const verificationFn = useServerFn(getMyVerification);
   const payoutFn = useServerFn(getDriverPayoutStatus);
 
