@@ -370,9 +370,19 @@ function ActiveRideCard({
             </Button>
           )}
           {ride.status === "driver_arrived" && (
-            <div className="flex items-center justify-center gap-2 rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" /> Waiting for the rider to start the ride…
-            </div>
+            <>
+              <div className="flex items-center justify-center gap-2 rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" /> Waiting for the rider to start the ride…
+              </div>
+              <Button
+                variant="outline"
+                className="h-10 text-destructive hover:text-destructive"
+                disabled={pending}
+                onClick={onNoShow}
+              >
+                Report rider no-show
+              </Button>
+            </>
           )}
           {ride.status === "in_progress" && (
             <Button className="h-11" disabled={pending} onClick={() => onAdvance("complete")}>
