@@ -32,6 +32,7 @@ export interface RideDTO {
   cancellation_reason: string | null;
   cancelled_at: string | null;
   cancelled_by: string | null;
+  scheduled_for: string | null;
 }
 
 export const RIDE_COLUMNS =
