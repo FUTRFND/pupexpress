@@ -18,8 +18,17 @@ export function AppHeader() {
   const countFn = useServerFn(getUnreadNotificationCount);
   const { data } = useQuery({
     queryKey: ["notifications-unread"],
-    queryFn: () => countFn(),
+    // Fail soft: during sign-out the session token can be gone before `user`
+    // flips to null, so a stray call would 401. Swallow it and show 0.
+    queryFn: async () => {
+      try {
+        return await countFn();
+      } catch {
+        return { count: 0 };
+      }
+    },
     enabled: Boolean(user),
+    retry: false,
   });
   const unread = data?.count ?? 0;
 

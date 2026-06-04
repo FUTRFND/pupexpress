@@ -24,8 +24,17 @@ function useUnreadMessages() {
 
   const { data } = useQuery({
     queryKey: ["unread-messages"],
-    queryFn: () => countFn(),
+    // Fail soft: during sign-out the session token can be gone before `user`
+    // flips to null, so a stray call would 401. Swallow it and show 0.
+    queryFn: async () => {
+      try {
+        return await countFn();
+      } catch {
+        return { count: 0 };
+      }
+    },
     enabled: Boolean(user),
+    retry: false,
   });
 
   // RLS limits delivered rows to the user's rides, so any insert is relevant.
