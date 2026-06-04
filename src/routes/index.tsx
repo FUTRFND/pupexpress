@@ -16,9 +16,6 @@ import pupxpressHero from "@/assets/pupxpress-hero.png.asset.json";
 const TOUR_DONE_KEY = "pupx_tour_done";
 
 export const Route = createFileRoute("/")({
-  // Body depends on client-only auth state (localStorage session); skip SSR for
-  // this route so the welcome/auth screen never produces a hydration mismatch.
-  ssr: false,
   head: () => ({
     meta: [
       { title: "PupXpress — Rides for your dog" },
