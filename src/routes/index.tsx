@@ -129,17 +129,43 @@ function AuthScreen() {
   return (
     <div className="flex min-h-screen flex-col">
       <header
-        className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pb-8 pt-16 text-center text-primary-foreground"
-        style={{ background: "var(--gradient-hero)" }}
+        className="relative flex flex-1 flex-col items-center overflow-hidden px-6 text-center"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 3rem)" }}
       >
-        <span className="text-4xl font-bold tracking-tight">PupXpress</span>
-        <p className="max-w-xs text-sm text-primary-foreground/80">
-          Trusted rides for your dog. Ride as a pet parent, or drive and earn.
-        </p>
+        <img
+          src={pupxpressHero.url}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+        <img
+          src={pupxpressLogo.url}
+          alt="PupXpress"
+          className="relative h-20 w-auto drop-shadow-[0_4px_16px_rgba(0,0,0,0.15)]"
+        />
       </header>
 
-      <main className="flex flex-col gap-5 rounded-t-3xl bg-background px-6 py-8 shadow-[var(--shadow-elegant)]">
+      <main className="relative z-10 -mt-8 flex flex-col gap-5 rounded-t-3xl bg-background px-6 py-8 shadow-[var(--shadow-elegant)]">
         <Button
+          variant="outline"
+          className="h-12 w-full text-base"
+          onClick={handleGoogle}
+          disabled={busy}
+        >
+          <GoogleIcon />
+          Continue with Google
+        </Button>
+
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          or use email
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <EmailAuth busy={busy} setBusy={setBusy} />
+      </main>
+    </div>
           variant="outline"
           className="h-12 w-full text-base"
           onClick={handleGoogle}
