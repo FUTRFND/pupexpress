@@ -74,7 +74,7 @@ export const createRide = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => createRideSchema.parse(input))
   .handler(async ({ data, context }): Promise<RideDTO> => {
-    const { supabase, userId } = context;
+    const { userId } = context;
 
     // Compute the fare server-side from the live driving route so the stored
     // total can't be tampered with by the client. If the route lookup fails
