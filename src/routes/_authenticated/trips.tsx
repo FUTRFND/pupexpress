@@ -3,7 +3,7 @@ import { createFileRoute, useSearch, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, MapPin, Navigation, MessageCircle } from "lucide-react";
+import { Loader2, MapPin, Navigation, MessageCircle, CalendarClock } from "lucide-react";
 
 import { useMode } from "@/hooks/use-mode";
 import { listMyRides, type RideDTO } from "@/lib/rides.functions";
