@@ -166,7 +166,8 @@ export const createRideCheckout = createServerFn({ method: "POST" })
       .update({
         ride_total: fees.rideTotal,
         platform_fee: fees.platformFee,
-        driver_earnings: fees.driverEarnings,
+        driver_earnings: driverEarningsWithTip,
+        tip_amount: tip,
         payment_status: "payment_pending",
         stripe_checkout_session_id: session.id,
       })
@@ -178,7 +179,7 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     await recordCheckoutPayment({
       rideId: ride.id,
       riderId: userId,
-      amount: fees.rideTotal,
+      amount: chargedTotal,
       platformFee: fees.platformFee,
       currency: fees.currency,
       sessionId: session.id,
