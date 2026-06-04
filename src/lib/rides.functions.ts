@@ -2,7 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { quoteFare } from "@/lib/pricing.server";
+import {
+  quoteFare,
+  computeCancellationFee,
+  type CancellationReason,
+} from "@/lib/pricing.server";
 
 export interface RideDTO {
   id: string;
