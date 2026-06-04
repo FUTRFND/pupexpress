@@ -341,10 +341,12 @@ function AvailableRides({
 function ActiveRideCard({
   ride,
   onAdvance,
+  onNoShow,
   pending,
 }: {
   ride: RideDTO;
   onAdvance: (action: "en_route" | "arrive" | "complete" | "cancel") => void;
+  onNoShow: () => void;
   pending: boolean;
 }) {
   return (
