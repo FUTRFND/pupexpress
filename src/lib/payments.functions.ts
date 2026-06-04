@@ -83,6 +83,11 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     }
 
     const fees = computeFees(ride.ride_total);
+    // Round the tip to 2 decimals; it is added on top of the fare and paid
+    // out entirely to the driver (no platform fee on tips).
+    const tip = Math.round(Math.max(0, data.tip ?? 0) * 100) / 100;
+    const driverEarningsWithTip = Math.round((fees.driverEarnings + tip) * 100) / 100;
+    const chargedTotal = Math.round((fees.rideTotal + tip) * 100) / 100;
     const origin = resolveOrigin();
 
     // Load rider contact details for the Stripe customer.
