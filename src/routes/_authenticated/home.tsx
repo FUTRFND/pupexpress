@@ -58,6 +58,8 @@ function RiderBooking() {
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [petId, setPetId] = useState<string | null>(null);
   const [promo, setPromo] = useState<PromoState | null>(null);
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduledFor, setScheduledFor] = useState("");
   const [, setQuote] = useState<FareEstimateDTO | null>(null);
   const handleQuote = useCallback(
     (q: FareEstimateDTO | null) => setQuote(q),
