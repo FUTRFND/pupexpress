@@ -579,6 +579,7 @@ export type Database = {
       rides: {
         Row: {
           accepted_at: string | null
+          cancellation_fee: number
           cancellation_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
@@ -615,6 +616,7 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          cancellation_fee?: number
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -651,6 +653,7 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          cancellation_fee?: number
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -743,6 +746,7 @@ export type Database = {
           total_uses: number
         }[]
       }
+      current_is_privileged: { Args: never; Returns: boolean }
       get_referral_leaderboard: {
         Args: { _limit?: number }
         Returns: {

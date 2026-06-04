@@ -161,8 +161,14 @@ export const createRideCheckout = createServerFn({ method: "POST" })
 
     if (!session.url) throw new Error("Stripe did not return a checkout URL.");
 
-    // Persist the computed amounts + session id on the ride (rider-scoped RLS).
-    const { error: updateError } = await supabase
+    // Persist the computed amounts + session id on the ride. Financial columns
+    // are locked to the service role by a DB trigger, so this write goes through
+    // the admin client; the ride id + rider_id predicate keeps it scoped to the
+    // ride we already verified the caller owns above.
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { error: updateError } = await supabaseAdmin
       .from("rides")
       .update({
         ride_total: fees.rideTotal,
