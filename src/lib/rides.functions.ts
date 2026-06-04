@@ -94,7 +94,14 @@ export const createRide = createServerFn({ method: "POST" })
       console.error("Fare quote failed; storing zeroed total", err);
     }
 
-    const { data: ride, error } = await supabase
+    // Financial columns (ride_total/platform_fee/driver_earnings) are locked to
+    // the service role by a DB trigger, so the priced insert runs through the
+    // admin client. rider_id is pinned to the authenticated user, so this stays
+    // scoped to the caller even though it bypasses RLS.
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { data: ride, error } = await supabaseAdmin
       .from("rides")
       .insert({
         rider_id: userId,
