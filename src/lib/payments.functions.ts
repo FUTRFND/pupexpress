@@ -256,3 +256,128 @@ export const confirmRidePayment = createServerFn({ method: "POST" })
 
     return { paid: false, status: "pending" };
   });
+
+/**
+ * Create a Stripe Checkout Session to collect a cancellation/no-show fee for a
+ * cancelled ride the signed-in rider owns. The driver's share is paid out via
+ * the webhook once the fee is collected.
+ */
+export const createCancellationFeeCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ rideId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<CheckoutResult> => {
+    assertStripeActionsAllowed("Cancellation fee checkout");
+    const { supabase, userId } = context;
+
+    const { data: ride, error } = await supabase
+      .from("rides")
+      .select(
+        "id, status, payment_status, driver_id, cancellation_fee, platform_fee, driver_earnings, pickup_address, destination_address, stripe_checkout_session_id",
+      )
+      .eq("id", data.rideId)
+      .eq("rider_id", userId)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!ride) throw new Error("Ride not found.");
+    if (ride.status !== "cancelled") {
+      throw new Error("No cancellation fee is due for this ride.");
+    }
+    const fee = Math.round(Number(ride.cancellation_fee ?? 0) * 100) / 100;
+    if (fee <= 0) throw new Error("No cancellation fee is due for this ride.");
+    if (ride.payment_status === "paid") {
+      throw new Error("This cancellation fee is already paid.");
+    }
+
+    const cfg = getFeeConfig();
+
+    // Reuse an open session if one already exists.
+    if (
+      ride.payment_status === "payment_pending" &&
+      ride.stripe_checkout_session_id
+    ) {
+      const stripe = getStripe();
+      const existing = await stripe.checkout.sessions.retrieve(
+        ride.stripe_checkout_session_id,
+      );
+      if (existing.status === "open" && existing.url) {
+        return { url: existing.url };
+      }
+    }
+
+    const origin = resolveOrigin();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email, full_name")
+      .eq("id", userId)
+      .single();
+
+    const customerId = await ensureStripeCustomer({
+      riderId: userId,
+      email: profile?.email ?? null,
+      name: profile?.full_name ?? null,
+    });
+
+    const metadata: Record<string, string> = {
+      ride_id: ride.id,
+      rider_id: userId,
+      type: "cancellation_fee",
+      platform_fee: String(ride.platform_fee ?? 0),
+      driver_earnings: String(ride.driver_earnings ?? 0),
+    };
+    if (ride.driver_id) metadata.driver_id = ride.driver_id;
+
+    const stripe = getStripe();
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer: customerId,
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: cfg.currency,
+            unit_amount: toMinorUnits(fee),
+            product_data: {
+              name: "PupXpress cancellation fee",
+              description: `${ride.pickup_address} → ${ride.destination_address}`,
+            },
+          },
+        },
+      ],
+      payment_intent_data: {
+        transfer_group: `ride_${ride.id}`,
+        metadata,
+      },
+      metadata,
+      success_url: `${origin}/trips?payment=success&ride=${ride.id}`,
+      cancel_url: `${origin}/trips?payment=cancelled&ride=${ride.id}`,
+    });
+
+    if (!session.url) throw new Error("Stripe did not return a checkout URL.");
+
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { error: updateError } = await supabaseAdmin
+      .from("rides")
+      .update({
+        payment_status: "payment_pending",
+        stripe_checkout_session_id: session.id,
+      })
+      .eq("id", ride.id)
+      .eq("rider_id", userId);
+    if (updateError) throw new Error(updateError.message);
+
+    await recordCheckoutPayment({
+      rideId: ride.id,
+      riderId: userId,
+      amount: fee,
+      platformFee: Number(ride.platform_fee ?? 0),
+      currency: cfg.currency,
+      sessionId: session.id,
+    });
+
+    return { url: session.url };
+  });
