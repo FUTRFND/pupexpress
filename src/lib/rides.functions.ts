@@ -115,6 +115,7 @@ export const createRide = createServerFn({ method: "POST" })
         status: "requested",
         payment_status: "unpaid",
         transfer_status: "not_ready",
+        scheduled_for: data.scheduledFor ?? null,
       })
       .select(RIDE_COLUMNS)
       .single();
