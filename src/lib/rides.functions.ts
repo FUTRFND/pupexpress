@@ -124,16 +124,20 @@ export const createRide = createServerFn({ method: "POST" })
 
     const created = ride as RideDTO;
     // Let available drivers know there's a new ride to claim (best-effort).
-    const { notifyAvailableDrivers } = await import("./notifications.server");
-    await notifyAvailableDrivers(
-      {
-        title: "New ride request",
-        body: `Pickup at ${created.pickup_address}. Tap to view and accept.`,
-        type: "ride",
-        ride_id: created.id,
-      },
-      userId,
-    );
+    // Scheduled rides are surfaced to drivers closer to the pickup time, so we
+    // skip the immediate broadcast for them.
+    if (!created.scheduled_for) {
+      const { notifyAvailableDrivers } = await import("./notifications.server");
+      await notifyAvailableDrivers(
+        {
+          title: "New ride request",
+          body: `Pickup at ${created.pickup_address}. Tap to view and accept.`,
+          type: "ride",
+          ride_id: created.id,
+        },
+        userId,
+      );
+    }
 
     return created;
   });
