@@ -267,6 +267,17 @@ function RideCard({
           </div>
         ) : null}
 
+        {ride.tip_amount > 0 ? (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              {mode === "driver" ? "Tip received" : "Tip"}
+            </span>
+            <span className="font-medium text-primary">
+              {formatCurrency(ride.tip_amount, currency)}
+            </span>
+          </div>
+        ) : null}
+
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="text-xs">
             Payment: {ride.payment_status}
@@ -285,7 +296,14 @@ function RideCard({
           </Link>
         </Button>
 
-        {canPay ? <PayRideButton rideId={ride.id} className="h-10" /> : null}
+        {canPay ? (
+          <PayRideButton
+            rideId={ride.id}
+            rideTotal={ride.ride_total}
+            currency={currency}
+            className="h-10"
+          />
+        ) : null}
 
         {mode === "rider" &&
         ride.status === "completed" &&

@@ -242,7 +242,13 @@ function RideDetailPage() {
 
 
 
-      {canPay ? <PayRideButton rideId={ride.id} className="h-11" /> : null}
+      {canPay ? (
+        <PayRideButton
+          rideId={ride.id}
+          rideTotal={ride.ride_total}
+          className="h-11"
+        />
+      ) : null}
 
       {canReview ? (
         <RateRideDialog

@@ -36,7 +36,13 @@ export interface CheckoutResult {
 export const createRideCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ rideId: z.string().uuid() }).parse(input),
+    z
+      .object({
+        rideId: z.string().uuid(),
+        // Optional rider tip (currency units). Goes 100% to the driver.
+        tip: z.number().min(0).max(500).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     // SAFETY: block live-mode checkout sessions unless launch mode is on.
@@ -63,9 +69,11 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     if (ride.payment_status === "paid") {
       throw new Error("This ride is already paid.");
     }
+    const tip = Math.round(Math.max(0, data.tip ?? 0) * 100) / 100;
     if (!PAYABLE_PAYMENT_STATUSES.includes(ride.payment_status)) {
       // payment_pending: try to reuse the open session before making a new one.
-      if (ride.stripe_checkout_session_id) {
+      // Skip reuse when a tip is requested so the new amount is reflected.
+      if (ride.stripe_checkout_session_id && tip === 0) {
         const stripe = getStripe();
         const existing = await stripe.checkout.sessions.retrieve(
           ride.stripe_checkout_session_id,
@@ -77,6 +85,10 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     }
 
     const fees = computeFees(ride.ride_total);
+    // The tip is added on top of the fare and paid out entirely to the driver
+    // (no platform fee on tips).
+    const driverEarningsWithTip = Math.round((fees.driverEarnings + tip) * 100) / 100;
+    const chargedTotal = Math.round((fees.rideTotal + tip) * 100) / 100;
     const origin = resolveOrigin();
 
     // Load rider contact details for the Stripe customer.
@@ -108,6 +120,21 @@ export const createRideCheckout = createServerFn({ method: "POST" })
             },
           },
         },
+        ...(tip > 0
+          ? [
+              {
+                quantity: 1,
+                price_data: {
+                  currency: fees.currency,
+                  unit_amount: toMinorUnits(tip),
+                  product_data: {
+                    name: "Driver tip",
+                    description: "100% goes to your driver",
+                  },
+                },
+              },
+            ]
+          : []),
       ],
       payment_intent_data: {
         transfer_group: `ride_${ride.id}`,
@@ -116,7 +143,8 @@ export const createRideCheckout = createServerFn({ method: "POST" })
           rider_id: userId,
           driver_id: ride.driver_id,
           platform_fee: String(fees.platformFee),
-          driver_earnings: String(fees.driverEarnings),
+          driver_earnings: String(driverEarningsWithTip),
+          tip_amount: String(tip),
         },
       },
       metadata: {
@@ -124,7 +152,8 @@ export const createRideCheckout = createServerFn({ method: "POST" })
         rider_id: userId,
         driver_id: ride.driver_id,
         platform_fee: String(fees.platformFee),
-        driver_earnings: String(fees.driverEarnings),
+        driver_earnings: String(driverEarningsWithTip),
+        tip_amount: String(tip),
       },
       success_url: `${origin}/trips?payment=success&ride=${ride.id}`,
       cancel_url: `${origin}/trips?payment=cancelled&ride=${ride.id}`,
@@ -138,7 +167,8 @@ export const createRideCheckout = createServerFn({ method: "POST" })
       .update({
         ride_total: fees.rideTotal,
         platform_fee: fees.platformFee,
-        driver_earnings: fees.driverEarnings,
+        driver_earnings: driverEarningsWithTip,
+        tip_amount: tip,
         payment_status: "payment_pending",
         stripe_checkout_session_id: session.id,
       })
@@ -150,7 +180,7 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     await recordCheckoutPayment({
       rideId: ride.id,
       riderId: userId,
-      amount: fees.rideTotal,
+      amount: chargedTotal,
       platformFee: fees.platformFee,
       currency: fees.currency,
       sessionId: session.id,
