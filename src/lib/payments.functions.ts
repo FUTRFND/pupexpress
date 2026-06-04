@@ -36,7 +36,13 @@ export interface CheckoutResult {
 export const createRideCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ rideId: z.string().uuid() }).parse(input),
+    z
+      .object({
+        rideId: z.string().uuid(),
+        // Optional rider tip (currency units). Goes 100% to the driver.
+        tip: z.number().min(0).max(500).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     // SAFETY: block live-mode checkout sessions unless launch mode is on.
