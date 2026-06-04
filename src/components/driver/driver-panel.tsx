@@ -166,6 +166,30 @@ export function DriverPanel() {
           <Wallet className="size-4" /> View earnings history
         </Link>
       </Button>
+      {!canGoOnline && !gateLoading ? (
+        <Card className="border-amber-500/40 bg-amber-500/5">
+          <CardContent className="flex flex-col gap-3 py-4">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <ShieldCheck className="size-4 text-amber-500" />
+              Finish setup to go online
+            </div>
+            <GateRequirement
+              done={verificationApproved}
+              label="Document verification approved"
+              action={
+                !verificationApproved
+                  ? { to: "/driver/verify", label: "Verify documents" }
+                  : undefined
+              }
+            />
+            <GateRequirement
+              done={payoutsComplete}
+              label="Payout setup complete"
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card className="overflow-hidden">
 
         <CardContent className="flex items-center justify-between gap-3 py-4">
@@ -186,16 +210,25 @@ export function DriverPanel() {
               <p className="text-xs text-muted-foreground">
                 {online
                   ? "Receiving new ride requests"
-                  : "Go online to see ride requests"}
+                  : canGoOnline
+                    ? "Go online to see ride requests"
+                    : "Complete setup above to go online"}
               </p>
             </div>
           </div>
           <Button
             variant={online ? "secondary" : "default"}
             className="h-10"
+            disabled={gateLoading || (!online && !canGoOnline)}
             onClick={() => setOnline((v) => !v)}
           >
-            {online ? "Go offline" : "Go online"}
+            {gateLoading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : online ? (
+              "Go offline"
+            ) : (
+              "Go online"
+            )}
           </Button>
         </CardContent>
       </Card>
