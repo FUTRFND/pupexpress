@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Capacitor } from "@capacitor/core";
 
 import { registerDeviceToken } from "@/lib/push.functions";
 
@@ -8,18 +7,20 @@ import { registerDeviceToken } from "@/lib/push.functions";
  *
  * No-op in the browser / Lovable preview — web push is handled separately and
  * the Capacitor PushNotifications plugin only exists inside the native shell.
- * The plugin is imported dynamically so the web bundle never pulls in native
- * code paths.
+ * Everything Capacitor-related is imported dynamically inside the effect so the
+ * web/SSR bundle never evaluates native code paths (which touch `window`).
  */
 export function usePushNotifications(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
-    if (!Capacitor.isNativePlatform()) return;
 
     let cancelled = false;
 
     (async () => {
       try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (!Capacitor.isNativePlatform()) return;
+
         const { PushNotifications } = await import(
           "@capacitor/push-notifications"
         );
