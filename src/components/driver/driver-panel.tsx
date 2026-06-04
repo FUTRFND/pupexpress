@@ -10,7 +10,7 @@ import {
   Power,
   CheckCircle2,
   MessageCircle,
-  
+  ShieldCheck,
   Wallet,
 } from "lucide-react";
 
@@ -21,6 +21,8 @@ import {
   acceptRide,
   advanceRide,
 } from "@/lib/driver.functions";
+import { getMyVerification } from "@/lib/driver-verification.functions";
+import { getDriverPayoutStatus } from "@/lib/connect.functions";
 import type { RideDTO } from "@/lib/rides.functions";
 import { isActiveRide, rideStatusLabel } from "@/lib/ride-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
