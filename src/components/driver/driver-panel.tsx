@@ -177,9 +177,11 @@ export function DriverPanel() {
               done={verificationApproved}
               label="Document verification approved"
               action={
-                !verificationApproved
-                  ? { to: "/driver/verify", label: "Verify documents" }
-                  : undefined
+                !verificationApproved ? (
+                  <Button asChild size="sm" variant="outline" className="h-8">
+                    <Link to="/driver/verify">Verify documents</Link>
+                  </Button>
+                ) : undefined
               }
             />
             <GateRequirement
