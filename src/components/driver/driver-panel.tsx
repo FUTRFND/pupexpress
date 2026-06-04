@@ -128,6 +128,18 @@ export function DriverPanel() {
       toast.error(err instanceof Error ? err.message : "Couldn't update ride"),
   });
 
+  const noShowMutation = useMutation({
+    mutationFn: (rideId: string) => noShowFn({ data: { rideId } }),
+    onSuccess: () => {
+      toast.success("No-show reported — a fee was applied.");
+      invalidateAll();
+    },
+    onError: (err) =>
+      toast.error(
+        err instanceof Error ? err.message : "Couldn't report no-show",
+      ),
+  });
+
   // Keep available list fresh the moment a driver goes online.
   useEffect(() => {
     if (online && !activeRide) availableQuery.refetch();
