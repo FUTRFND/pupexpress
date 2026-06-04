@@ -187,6 +187,13 @@ function RideDetailPage() {
         <DemoDriverSimulator rideId={ride.id} />
       ) : null}
 
+      {active ? (
+        <RideEta
+          rideId={ride.id}
+          arrived={ride.status === "driver_arrived"}
+        />
+      ) : null}
+
       <div className="flex flex-col gap-2 text-sm">
         <div className="flex items-start gap-2">
           <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
