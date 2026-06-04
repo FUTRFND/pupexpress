@@ -42,6 +42,8 @@ export function DriverPanel() {
   const assignedFn = useServerFn(listMyDriverRides);
   const acceptFn = useServerFn(acceptRide);
   const advanceFn = useServerFn(advanceRide);
+  const verificationFn = useServerFn(getMyVerification);
+  const payoutFn = useServerFn(getDriverPayoutStatus);
 
   // Upgrade to a driver-capable role once when the panel mounts.
   const roleQuery = useQuery({
@@ -49,6 +51,27 @@ export function DriverPanel() {
     queryFn: () => ensureRoleFn(),
     staleTime: Infinity,
   });
+
+  // Gate going online: documents must be approved AND payouts enabled.
+  const verificationQuery = useQuery({
+    queryKey: ["driver-verification"],
+    queryFn: () => verificationFn(),
+    enabled: roleQuery.isSuccess,
+  });
+  const payoutStatusQuery = useQuery({
+    queryKey: ["driver-payout-status"],
+    queryFn: () => payoutFn(),
+    enabled: roleQuery.isSuccess,
+  });
+
+  const verificationApproved =
+    verificationQuery.data?.status === "approved";
+  const payoutsComplete =
+    payoutStatusQuery.data?.onboardingStatus === "complete" &&
+    payoutStatusQuery.data?.payoutsEnabled === true;
+  const gateLoading =
+    verificationQuery.isLoading || payoutStatusQuery.isLoading;
+  const canGoOnline = verificationApproved && payoutsComplete;
 
   const assignedQuery = useQuery({
     queryKey: ["driver-assigned"],
