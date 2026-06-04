@@ -92,6 +92,36 @@ export type Database = {
           },
         ]
       }
+      driver_presence: {
+        Row: {
+          created_at: string
+          driver_id: string
+          heading: number | null
+          is_online: boolean
+          lat: number
+          lng: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id: string
+          heading?: number | null
+          is_online?: boolean
+          lat: number
+          lng: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string
+          heading?: number | null
+          is_online?: boolean
+          lat?: number
+          lng?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       driver_verifications: {
         Row: {
           created_at: string
