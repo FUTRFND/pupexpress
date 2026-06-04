@@ -17,6 +17,7 @@ import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
 import { isActiveRide, rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
 import { formatCurrency } from "@/lib/format";
 import { TrackMap } from "@/components/trips/track-map";
+import { RideEta } from "@/components/trips/ride-eta";
 import { DriverCard } from "@/components/trips/driver-card";
 import { RideConversation } from "@/components/trips/ride-conversation";
 import { DEMO_DRIVER_NAME } from "@/lib/demo.functions";
@@ -184,6 +185,13 @@ function RideDetailPage() {
 
       {isDemo && active && viewerRole === "rider" ? (
         <DemoDriverSimulator rideId={ride.id} />
+      ) : null}
+
+      {active ? (
+        <RideEta
+          rideId={ride.id}
+          arrived={ride.status === "driver_arrived"}
+        />
       ) : null}
 
       <div className="flex flex-col gap-2 text-sm">

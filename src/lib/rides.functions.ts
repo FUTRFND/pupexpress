@@ -22,16 +22,20 @@ export interface RideDTO {
   ride_total: number;
   platform_fee: number;
   driver_earnings: number;
+  tip_amount: number;
   created_at: string;
   accepted_at: string | null;
   started_at: string | null;
   completed_at: string | null;
   paid_at: string | null;
   transferred_at: string | null;
+  cancellation_reason: string | null;
+  cancelled_at: string | null;
+  cancelled_by: string | null;
 }
 
 export const RIDE_COLUMNS =
-  "id, status, payment_status, transfer_status, pickup_address, destination_address, pickup_lat, pickup_lng, destination_lat, destination_lng, pet_id, rider_id, driver_id, notes, ride_total, platform_fee, driver_earnings, created_at, accepted_at, started_at, completed_at, paid_at, transferred_at";
+  "id, status, payment_status, transfer_status, pickup_address, destination_address, pickup_lat, pickup_lng, destination_lat, destination_lng, pet_id, rider_id, driver_id, notes, ride_total, platform_fee, driver_earnings, tip_amount, created_at, accepted_at, started_at, completed_at, paid_at, transferred_at, cancellation_reason, cancelled_at, cancelled_by";
 
 const locationSchema = z.object({
   address: z.string().trim().min(1, "Address is required").max(300),
@@ -141,13 +145,23 @@ export const listMyRides = createServerFn({ method: "GET" })
 export const cancelMyRide = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ rideId: z.string().uuid() }).parse(input),
+    z
+      .object({
+        rideId: z.string().uuid(),
+        reason: z.string().trim().max(300).optional().nullable(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }): Promise<RideDTO> => {
     const { supabase, userId } = context;
     const { data: ride, error } = await supabase
       .from("rides")
-      .update({ status: "cancelled" })
+      .update({
+        status: "cancelled",
+        cancellation_reason: data.reason?.trim() || null,
+        cancelled_at: new Date().toISOString(),
+        cancelled_by: userId,
+      })
       .eq("id", data.rideId)
       .eq("rider_id", userId)
       .in("status", ["requested", "accepted", "driver_en_route", "driver_arrived"])
@@ -165,7 +179,9 @@ export const cancelMyRide = createServerFn({ method: "POST" })
         {
           user_id: cancelled.driver_id,
           title: "Ride cancelled by rider",
-          body: "The rider cancelled this ride. It's been removed from your trips.",
+          body: cancelled.cancellation_reason
+            ? `The rider cancelled: "${cancelled.cancellation_reason}"`
+            : "The rider cancelled this ride. It's been removed from your trips.",
           type: "ride",
           ride_id: cancelled.id,
         },

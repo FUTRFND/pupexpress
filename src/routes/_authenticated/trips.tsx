@@ -1,18 +1,12 @@
 import { useEffect } from "react";
 import { createFileRoute, useSearch, Link } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import {
-  Loader2,
-  MapPin,
-  Navigation,
-  XCircle,
-  MessageCircle,
-} from "lucide-react";
+import { Loader2, MapPin, Navigation, MessageCircle } from "lucide-react";
 
 import { useMode } from "@/hooks/use-mode";
-import { listMyRides, cancelMyRide, type RideDTO } from "@/lib/rides.functions";
+import { listMyRides, type RideDTO } from "@/lib/rides.functions";
 import { listMyDriverRides } from "@/lib/driver.functions";
 import {
   rideStatusLabel,
@@ -26,22 +20,12 @@ import { confirmRidePayment } from "@/lib/payments.functions";
 import { listMyRideRatings, type RideRatingDTO } from "@/lib/ratings.functions";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
 import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
+import { CancelRideDialog } from "@/components/trips/cancel-ride-dialog";
 import { RideTimeline } from "@/components/trips/ride-timeline";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 interface TripsSearch {
   payment?: "success" | "cancelled";
@@ -223,8 +207,6 @@ function RideCard({
   mode: "rider" | "driver";
   rating?: RideRatingDTO;
 }) {
-  const queryClient = useQueryClient();
-  const cancelFn = useServerFn(cancelMyRide);
   const currency = "usd";
   const canPay =
     mode === "rider" &&
@@ -233,17 +215,6 @@ function RideCard({
     PAYABLE.includes(ride.payment_status);
   const canCancel = mode === "rider" && CANCELLABLE.includes(ride.status);
 
-  const cancelMutation = useMutation({
-    mutationFn: () => cancelFn({ data: { rideId: ride.id } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rides"] });
-      toast.success("Ride cancelled");
-    },
-    onError: (err) =>
-      toast.error(
-        err instanceof Error ? err.message : "Couldn't cancel this ride",
-      ),
-  });
 
   return (
     <Card>
@@ -328,37 +299,7 @@ function RideCard({
         ) : null}
 
         {canCancel ? (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-10 text-destructive hover:text-destructive"
-                disabled={cancelMutation.isPending}
-              >
-                {cancelMutation.isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <XCircle className="size-4" />
-                )}
-                Cancel ride
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Cancel this ride?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This cancels your pet's ride request. You can't undo this, but
-                  you can book again anytime.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Keep ride</AlertDialogCancel>
-                <AlertDialogAction onClick={() => cancelMutation.mutate()}>
-                  Cancel ride
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <CancelRideDialog rideId={ride.id} className="h-10" />
         ) : null}
       </CardContent>
     </Card>
