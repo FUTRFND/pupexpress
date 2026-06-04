@@ -143,6 +143,7 @@ function RiderBooking() {
           value={pickup}
           onSelect={setPickup}
           onClear={() => setPickup(null)}
+          enableFavorites
         />
 
         <PlaceAutocomplete
@@ -152,12 +153,20 @@ function RiderBooking() {
           value={destination}
           onSelect={setDestination}
           onClear={() => setDestination(null)}
+          enableFavorites
         />
 
         <FareEstimate
           pickup={pickup}
           destination={destination}
           onQuote={handleQuote}
+        />
+
+        <ScheduleRidePicker
+          enabled={scheduleEnabled}
+          value={scheduledFor}
+          onToggle={setScheduleEnabled}
+          onChange={setScheduledFor}
         />
 
 
@@ -178,8 +187,11 @@ function RiderBooking() {
         >
           {rideMutation.isPending ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Requesting…
+              <Loader2 className="size-4 animate-spin" />{" "}
+              {scheduleEnabled ? "Scheduling…" : "Requesting…"}
             </>
+          ) : scheduleEnabled ? (
+            "Schedule ride"
           ) : (
             "Request ride"
           )}
