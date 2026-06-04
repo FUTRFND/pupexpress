@@ -246,6 +246,14 @@ function RideDetailPage() {
         />
       ) : null}
 
+      {canPayFee ? (
+        <PayCancellationFeeButton
+          rideId={ride.id}
+          fee={Number(ride.cancellation_fee ?? 0)}
+          className="h-11 w-full"
+        />
+      ) : null}
+
       {canReview ? (
         <RateRideDialog
           rideId={ride.id}
