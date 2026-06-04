@@ -412,7 +412,7 @@ function GateRequirement({
 }: {
   done: boolean;
   label: string;
-  action?: { to: string; label: string };
+  action?: React.ReactNode;
 }) {
   return (
     <div className="flex items-center justify-between gap-2 text-sm">
@@ -426,11 +426,7 @@ function GateRequirement({
           {label}
         </span>
       </span>
-      {!done && action ? (
-        <Button asChild size="sm" variant="outline" className="h-8">
-          <Link to={action.to}>{action.label}</Link>
-        </Button>
-      ) : null}
+      {!done ? action : null}
     </div>
   );
 }
