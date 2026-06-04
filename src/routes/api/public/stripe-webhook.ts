@@ -9,6 +9,7 @@ import {
 import {
   markRidePaid,
   markPaymentFailed,
+  markCancellationFeePaid,
   syncConnectAccount,
 } from "@/lib/payments.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
