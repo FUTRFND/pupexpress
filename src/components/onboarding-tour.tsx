@@ -1,50 +1,47 @@
 import { useRef, useState, useCallback } from "react";
-import {
-  Car,
-  Navigation,
-  MessageCircle,
-  CalendarClock,
-  Gift,
-  type LucideIcon,
-} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import pupxpressLogo from "@/assets/pupxpress-logo.png.asset.json";
+import tourRides from "@/assets/tour-rides.jpg.asset.json";
+import tourTracking from "@/assets/tour-tracking.jpg.asset.json";
+import tourChat from "@/assets/tour-chat.jpg.asset.json";
+import tourSchedule from "@/assets/tour-schedule.jpg.asset.json";
+import tourRefer from "@/assets/tour-refer.jpg.asset.json";
 
 interface TourSlide {
-  icon: LucideIcon;
+  image: string;
   title: string;
   description: string;
 }
 
 const SLIDES: TourSlide[] = [
   {
-    icon: Car,
+    image: tourRides.url,
     title: "Door-to-door dog rides",
     description:
       "Book trusted, dog-friendly rides in seconds. Your pup travels safe, comfy and in good hands.",
   },
   {
-    icon: Navigation,
+    image: tourTracking.url,
     title: "Live tracking & ETA",
     description:
       "Follow every trip on the map in real time, with traffic-aware arrival times you can count on.",
   },
   {
-    icon: MessageCircle,
+    image: tourChat.url,
     title: "Chat with your driver",
     description:
       "Coordinate pickups and share pet-care notes instantly with built-in ride messaging.",
   },
   {
-    icon: CalendarClock,
+    image: tourSchedule.url,
     title: "Schedule & save favorites",
     description:
       "Plan rides ahead of time and rebook your go-to places with a single tap.",
   },
   {
-    icon: Gift,
+    image: tourRefer.url,
     title: "Refer, tip & earn",
     description:
       "Invite friends for ride credit, tip great drivers, and switch to driver mode to earn.",
@@ -101,7 +98,6 @@ export function OnboardingTour({ onDone }: { onDone: () => void }) {
         className="flex flex-1 snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         {SLIDES.map((slide) => {
-          const Icon = slide.icon;
           return (
             <section
               key={slide.title}
@@ -109,15 +105,19 @@ export function OnboardingTour({ onDone }: { onDone: () => void }) {
             >
               <div className="relative flex items-center justify-center">
                 <span
-                  className="absolute h-44 w-44 rounded-full opacity-60 blur-2xl"
+                  className="absolute -inset-3 rounded-[2.75rem] opacity-50 blur-2xl"
                   style={{ background: "var(--gradient-hero)" }}
                   aria-hidden
                 />
-                <div
-                  className="relative flex h-36 w-36 items-center justify-center rounded-[2rem] text-primary-foreground shadow-[var(--shadow-elegant)]"
-                  style={{ background: "var(--gradient-hero)" }}
-                >
-                  <Icon className="h-16 w-16" strokeWidth={1.6} />
+                <div className="relative h-64 w-64 overflow-hidden rounded-[2.25rem] shadow-[var(--shadow-elegant)] ring-1 ring-border/50">
+                  <img
+                    src={slide.image}
+                    alt={slide.title}
+                    width={1024}
+                    height={1024}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
               </div>
 
