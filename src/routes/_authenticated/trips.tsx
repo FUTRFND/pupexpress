@@ -251,6 +251,15 @@ function RideCard({
           </div>
         </div>
 
+        {ride.scheduled_for ? (
+          <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm text-primary">
+            <CalendarClock className="size-4 shrink-0" />
+            <span className="font-medium">
+              Scheduled for {new Date(ride.scheduled_for).toLocaleString()}
+            </span>
+          </div>
+        ) : null}
+
         <RideTimeline ride={ride} />
 
         {ride.ride_total > 0 ? (
