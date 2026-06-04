@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -10,7 +10,7 @@ import {
   Power,
   CheckCircle2,
   MessageCircle,
-  
+  ShieldCheck,
   Wallet,
 } from "lucide-react";
 
@@ -21,6 +21,8 @@ import {
   acceptRide,
   advanceRide,
 } from "@/lib/driver.functions";
+import { getMyVerification } from "@/lib/driver-verification.functions";
+import { getDriverPayoutStatus } from "@/lib/connect.functions";
 import type { RideDTO } from "@/lib/rides.functions";
 import { isActiveRide, rideStatusLabel } from "@/lib/ride-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +42,8 @@ export function DriverPanel() {
   const assignedFn = useServerFn(listMyDriverRides);
   const acceptFn = useServerFn(acceptRide);
   const advanceFn = useServerFn(advanceRide);
+  const verificationFn = useServerFn(getMyVerification);
+  const payoutFn = useServerFn(getDriverPayoutStatus);
 
   // Upgrade to a driver-capable role once when the panel mounts.
   const roleQuery = useQuery({
@@ -47,6 +51,27 @@ export function DriverPanel() {
     queryFn: () => ensureRoleFn(),
     staleTime: Infinity,
   });
+
+  // Gate going online: documents must be approved AND payouts enabled.
+  const verificationQuery = useQuery({
+    queryKey: ["driver-verification"],
+    queryFn: () => verificationFn(),
+    enabled: roleQuery.isSuccess,
+  });
+  const payoutStatusQuery = useQuery({
+    queryKey: ["driver-payout-status"],
+    queryFn: () => payoutFn(),
+    enabled: roleQuery.isSuccess,
+  });
+
+  const verificationApproved =
+    verificationQuery.data?.status === "approved";
+  const payoutsComplete =
+    payoutStatusQuery.data?.onboardingStatus === "complete" &&
+    payoutStatusQuery.data?.payoutsEnabled === true;
+  const gateLoading =
+    verificationQuery.isLoading || payoutStatusQuery.isLoading;
+  const canGoOnline = verificationApproved && payoutsComplete;
 
   const assignedQuery = useQuery({
     queryKey: ["driver-assigned"],
@@ -107,6 +132,12 @@ export function DriverPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [online]);
 
+  // If the driver loses eligibility (or it never resolved), force them offline.
+  useEffect(() => {
+    if (online && !canGoOnline) setOnline(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canGoOnline, online]);
+
   if (roleQuery.isLoading) {
     return (
       <Card>
@@ -135,6 +166,32 @@ export function DriverPanel() {
           <Wallet className="size-4" /> View earnings history
         </Link>
       </Button>
+      {!canGoOnline && !gateLoading ? (
+        <Card className="border-amber-500/40 bg-amber-500/5">
+          <CardContent className="flex flex-col gap-3 py-4">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <ShieldCheck className="size-4 text-amber-500" />
+              Finish setup to go online
+            </div>
+            <GateRequirement
+              done={verificationApproved}
+              label="Document verification approved"
+              action={
+                !verificationApproved ? (
+                  <Button asChild size="sm" variant="outline" className="h-8">
+                    <Link to="/driver/verify">Verify documents</Link>
+                  </Button>
+                ) : undefined
+              }
+            />
+            <GateRequirement
+              done={payoutsComplete}
+              label="Payout setup complete"
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card className="overflow-hidden">
 
         <CardContent className="flex items-center justify-between gap-3 py-4">
@@ -155,16 +212,25 @@ export function DriverPanel() {
               <p className="text-xs text-muted-foreground">
                 {online
                   ? "Receiving new ride requests"
-                  : "Go online to see ride requests"}
+                  : canGoOnline
+                    ? "Go online to see ride requests"
+                    : "Complete setup above to go online"}
               </p>
             </div>
           </div>
           <Button
             variant={online ? "secondary" : "default"}
             className="h-10"
+            disabled={gateLoading || (!online && !canGoOnline)}
             onClick={() => setOnline((v) => !v)}
           >
-            {online ? "Go offline" : "Go online"}
+            {gateLoading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : online ? (
+              "Go offline"
+            ) : (
+              "Go online"
+            )}
           </Button>
         </CardContent>
       </Card>
@@ -335,6 +401,32 @@ function RideRoute({ ride }: { ride: RideDTO }) {
         <Navigation className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
         <span className="text-foreground">{ride.destination_address}</span>
       </div>
+    </div>
+  );
+}
+
+function GateRequirement({
+  done,
+  label,
+  action,
+}: {
+  done: boolean;
+  label: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 text-sm">
+      <span className="flex items-center gap-2">
+        {done ? (
+          <CheckCircle2 className="size-4 text-primary" />
+        ) : (
+          <span className="size-4 rounded-full border-2 border-muted-foreground/40" />
+        )}
+        <span className={done ? "text-foreground" : "text-muted-foreground"}>
+          {label}
+        </span>
+      </span>
+      {!done ? action : null}
     </div>
   );
 }
