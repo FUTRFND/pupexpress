@@ -119,6 +119,21 @@ export const createRideCheckout = createServerFn({ method: "POST" })
             },
           },
         },
+        ...(tip > 0
+          ? [
+              {
+                quantity: 1,
+                price_data: {
+                  currency: fees.currency,
+                  unit_amount: toMinorUnits(tip),
+                  product_data: {
+                    name: "Driver tip",
+                    description: "100% goes to your driver",
+                  },
+                },
+              },
+            ]
+          : []),
       ],
       payment_intent_data: {
         transfer_group: `ride_${ride.id}`,
@@ -127,7 +142,8 @@ export const createRideCheckout = createServerFn({ method: "POST" })
           rider_id: userId,
           driver_id: ride.driver_id,
           platform_fee: String(fees.platformFee),
-          driver_earnings: String(fees.driverEarnings),
+          driver_earnings: String(driverEarningsWithTip),
+          tip_amount: String(tip),
         },
       },
       metadata: {
@@ -135,7 +151,8 @@ export const createRideCheckout = createServerFn({ method: "POST" })
         rider_id: userId,
         driver_id: ride.driver_id,
         platform_fee: String(fees.platformFee),
-        driver_earnings: String(fees.driverEarnings),
+        driver_earnings: String(driverEarningsWithTip),
+        tip_amount: String(tip),
       },
       success_url: `${origin}/trips?payment=success&ride=${ride.id}`,
       cancel_url: `${origin}/trips?payment=cancelled&ride=${ride.id}`,
