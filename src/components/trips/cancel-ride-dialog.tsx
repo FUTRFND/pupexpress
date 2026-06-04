@@ -49,6 +49,14 @@ export function CancelRideDialog({
   const [note, setNote] = useState("");
   const queryClient = useQueryClient();
   const cancelFn = useServerFn(cancelMyRide);
+  const quoteFn = useServerFn(getCancellationQuote);
+
+  const quoteQuery = useQuery({
+    queryKey: ["cancellation-quote", rideId],
+    queryFn: () => quoteFn({ data: { rideId } }),
+    enabled: open,
+  });
+  const fee = quoteQuery.data?.fee ?? 0;
 
   const cancelMutation = useMutation({
     mutationFn: () => {
