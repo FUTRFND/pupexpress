@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createFileRoute, useSearch, Link } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Loader2, MapPin, Navigation, MessageCircle } from "lucide-react";
