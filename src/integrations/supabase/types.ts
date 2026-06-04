@@ -516,6 +516,9 @@ export type Database = {
       rides: {
         Row: {
           accepted_at: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           completed_at: string | null
           created_at: string
           destination_address: string
@@ -542,11 +545,15 @@ export type Database = {
           stripe_checkout_session_id: string | null
           stripe_payment_intent_id: string | null
           stripe_transfer_id: string | null
+          tip_amount: number
           transfer_status: Database["public"]["Enums"]["transfer_status"]
           transferred_at: string | null
         }
         Insert: {
           accepted_at?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           completed_at?: string | null
           created_at?: string
           destination_address: string
@@ -573,11 +580,15 @@ export type Database = {
           stripe_checkout_session_id?: string | null
           stripe_payment_intent_id?: string | null
           stripe_transfer_id?: string | null
+          tip_amount?: number
           transfer_status?: Database["public"]["Enums"]["transfer_status"]
           transferred_at?: string | null
         }
         Update: {
           accepted_at?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           completed_at?: string | null
           created_at?: string
           destination_address?: string
@@ -604,6 +615,7 @@ export type Database = {
           stripe_checkout_session_id?: string | null
           stripe_payment_intent_id?: string | null
           stripe_transfer_id?: string | null
+          tip_amount?: number
           transfer_status?: Database["public"]["Enums"]["transfer_status"]
           transferred_at?: string | null
         }
