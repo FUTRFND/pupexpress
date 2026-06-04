@@ -15,7 +15,7 @@ import {
 import { listMyRideRatings } from "@/lib/ratings.functions";
 import { RateRideDialog } from "@/components/ratings/rate-ride-dialog";
 import { isActiveRide, rideStatusLabel, rideStatusVariant } from "@/lib/ride-status";
-import { formatCurrency } from "@/lib/format";
+
 import { TrackMap } from "@/components/trips/track-map";
 import { RideEta } from "@/components/trips/ride-eta";
 import { DriverCard } from "@/components/trips/driver-card";
@@ -24,6 +24,7 @@ import { DEMO_DRIVER_NAME } from "@/lib/demo.functions";
 import { RideTimeline } from "@/components/trips/ride-timeline";
 import { DriverLocationSharer } from "@/components/trips/driver-location-sharer";
 import { PayRideButton } from "@/components/payments/pay-ride-button";
+import { RideReceipt } from "@/components/trips/ride-receipt";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -207,19 +208,8 @@ function RideDetailPage() {
 
       {driverInfo ? <DriverCard driver={driverInfo} /> : null}
 
+      <RideReceipt ride={ride} viewerRole={viewerRole} />
 
-      {ride.ride_total > 0 ? (
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
-            {viewerRole === "driver" ? "Your earnings" : "Ride total"}
-          </span>
-          <span className="font-semibold">
-            {formatCurrency(
-              viewerRole === "driver" ? ride.driver_earnings : ride.ride_total,
-            )}
-          </span>
-        </div>
-      ) : null}
 
       {viewerRole === "driver" && active ? (
         <DriverLocationSharer rideId={ride.id} />

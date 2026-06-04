@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { quoteFare } from "./pricing.server";
 
 const coordSchema = z.object({
@@ -28,6 +29,7 @@ export interface FareEstimateDTO {
  * and pricing run entirely server-side via the connector gateway.
  */
 export const estimateFare = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => estimateSchema.parse(input))
   .handler(async ({ data }): Promise<FareEstimateDTO> => {
     const quote = await quoteFare(data.pickup, data.destination);
