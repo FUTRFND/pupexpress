@@ -4,6 +4,7 @@ import { Loader2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { FavoritesMenu } from "@/components/booking/favorites-menu";
 import {
   loadGoogleMaps,
   isMapsConfigured,
@@ -23,6 +24,7 @@ interface PlaceAutocompleteProps {
   value: SelectedPlace | null;
   onSelect: (place: SelectedPlace) => void;
   onClear: () => void;
+  enableFavorites?: boolean;
 }
 
 export function PlaceAutocomplete({
