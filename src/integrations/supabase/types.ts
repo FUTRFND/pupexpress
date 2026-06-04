@@ -122,6 +122,42 @@ export type Database = {
         }
         Relationships: []
       }
+      favorite_locations: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          label: string
+          lat: number | null
+          lng: number | null
+          place_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          label: string
+          lat?: number | null
+          lng?: number | null
+          place_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          label?: string
+          lat?: number | null
+          lng?: number | null
+          place_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           body: string
@@ -540,6 +576,7 @@ export type Database = {
           referral_code: string | null
           ride_total: number
           rider_id: string
+          scheduled_for: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["ride_status"]
           stripe_checkout_session_id: string | null
@@ -575,6 +612,7 @@ export type Database = {
           referral_code?: string | null
           ride_total?: number
           rider_id: string
+          scheduled_for?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["ride_status"]
           stripe_checkout_session_id?: string | null
@@ -610,6 +648,7 @@ export type Database = {
           referral_code?: string | null
           ride_total?: number
           rider_id?: string
+          scheduled_for?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["ride_status"]
           stripe_checkout_session_id?: string | null
