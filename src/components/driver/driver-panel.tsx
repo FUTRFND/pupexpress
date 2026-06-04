@@ -412,7 +412,7 @@ function GateRequirement({
 }: {
   done: boolean;
   label: string;
-  action?: React.ReactNode;
+  action?: ReactNode;
 }) {
   return (
     <div className="flex items-center justify-between gap-2 text-sm">
