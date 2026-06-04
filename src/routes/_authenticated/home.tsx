@@ -12,6 +12,7 @@ import { createRide } from "@/lib/rides.functions";
 import type { SelectedPlace } from "@/lib/maps-loader";
 import { PlaceAutocomplete } from "@/components/booking/place-autocomplete";
 import { RideMap } from "@/components/booking/ride-map";
+import { NearbyDrivers } from "@/components/booking/nearby-drivers";
 import { FareEstimate } from "@/components/booking/fare-estimate";
 import { ScheduleRidePicker } from "@/components/booking/schedule-ride-picker";
 import { AddPetDialog } from "@/components/booking/add-pet-dialog";
