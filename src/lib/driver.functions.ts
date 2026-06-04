@@ -49,11 +49,17 @@ export const listAvailableRides = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<RideDTO[]> => {
     const { supabase } = context;
+    // Scheduled rides only surface to drivers once they're within the lead
+    // window (default 45 min) of the pickup time. Immediate rides
+    // (scheduled_for null) always show.
+    const leadMinutes = Number(process.env.SCHEDULE_LEAD_MINUTES ?? 45);
+    const cutoff = new Date(Date.now() + leadMinutes * 60 * 1000).toISOString();
     const { data, error } = await supabase
       .from("rides")
       .select(RIDE_COLUMNS)
       .is("driver_id", null)
       .eq("status", "requested")
+      .or(`scheduled_for.is.null,scheduled_for.lte.${cutoff}`)
       .order("created_at", { ascending: true });
 
     if (error) throw new Error(error.message);
