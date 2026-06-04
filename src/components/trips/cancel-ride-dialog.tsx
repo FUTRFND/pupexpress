@@ -99,6 +99,18 @@ export function CancelRideDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {fee > 0 ? (
+          <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
+            <span className="text-foreground">
+              A cancellation fee of{" "}
+              <span className="font-semibold">{formatCurrency(fee)}</span> applies
+              because your driver is already on the way.
+            </span>
+          </div>
+        ) : null}
+
+
         <RadioGroup value={reason} onValueChange={setReason} className="gap-2">
           {REASONS.map((r) => (
             <div key={r} className="flex items-center gap-2">
