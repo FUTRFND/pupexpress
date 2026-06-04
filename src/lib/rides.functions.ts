@@ -169,6 +169,42 @@ export const listMyRides = createServerFn({ method: "GET" })
     return (data ?? []) as RideDTO[];
   });
 
+export interface CancellationQuote {
+  /** Fee that would be charged if the rider cancels right now. */
+  fee: number;
+  willCharge: boolean;
+  reason: CancellationReason;
+}
+
+/**
+ * Tell the rider whether cancelling right now would incur a fee (and how much),
+ * so the cancel dialog can warn them before they confirm. Read is RLS-scoped to
+ * the rider's own ride.
+ */
+export const getCancellationQuote = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ rideId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }): Promise<CancellationQuote> => {
+    const { supabase, userId } = context;
+    const { data: ride, error } = await supabase
+      .from("rides")
+      .select("status, accepted_at")
+      .eq("id", data.rideId)
+      .eq("rider_id", userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!ride) throw new Error("Ride not found.");
+
+    const result = computeCancellationFee({
+      status: ride.status,
+      acceptedAt: ride.accepted_at,
+      cancelledBy: "rider",
+    });
+    return { fee: result.fee, willCharge: result.fee > 0, reason: result.reason };
+  });
+
 /** Cancel a ride the signed-in rider owns (only before it is in progress). */
 export const cancelMyRide = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -182,13 +218,43 @@ export const cancelMyRide = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<RideDTO> => {
     const { supabase, userId } = context;
-    const { data: ride, error } = await supabase
+
+    // Read first (RLS-scoped to the rider) so we can price the cancellation
+    // before we mutate. Confirms ownership and the current state.
+    const { data: current, error: readError } = await supabase
+      .from("rides")
+      .select("status, accepted_at, driver_id")
+      .eq("id", data.rideId)
+      .eq("rider_id", userId)
+      .maybeSingle();
+    if (readError) throw new Error(readError.message);
+    if (!current) throw new Error("This ride can no longer be cancelled.");
+
+    const fee = computeCancellationFee({
+      status: current.status,
+      acceptedAt: current.accepted_at,
+      cancelledBy: "rider",
+    });
+
+    // Financial columns (cancellation_fee/driver_earnings/platform_fee) are
+    // locked to the service role by a DB trigger, so the cancellation writes
+    // through the admin client. The id + rider_id + active-status predicate keeps
+    // it scoped to the ride we already confirmed the caller owns.
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { data: ride, error } = await supabaseAdmin
       .from("rides")
       .update({
         status: "cancelled",
         cancellation_reason: data.reason?.trim() || null,
         cancelled_at: new Date().toISOString(),
         cancelled_by: userId,
+        cancellation_fee: fee.fee,
+        // Repurpose the fee split onto the ride so the existing transfer engine
+        // can pay the driver their share once the fee is collected.
+        driver_earnings: fee.driverShare,
+        platform_fee: fee.platformShare,
       })
       .eq("id", data.rideId)
       .eq("rider_id", userId)
@@ -202,14 +268,19 @@ export const cancelMyRide = createServerFn({ method: "POST" })
     const cancelled = ride as RideDTO;
     // If a driver had already accepted, let them know it's off (best-effort).
     if (cancelled.driver_id) {
+      const feeNote =
+        fee.fee > 0
+          ? " A cancellation fee applies and will be shared with you."
+          : "";
       const { createNotifications } = await import("./notifications.server");
       await createNotifications([
         {
           user_id: cancelled.driver_id,
           title: "Ride cancelled by rider",
-          body: cancelled.cancellation_reason
-            ? `The rider cancelled: "${cancelled.cancellation_reason}"`
-            : "The rider cancelled this ride. It's been removed from your trips.",
+          body:
+            (cancelled.cancellation_reason
+              ? `The rider cancelled: "${cancelled.cancellation_reason}".`
+              : "The rider cancelled this ride.") + feeNote,
           type: "ride",
           ride_id: cancelled.id,
         },
