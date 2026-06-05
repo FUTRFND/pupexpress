@@ -218,7 +218,12 @@ function RiderBooking() {
           enableFavorites
         />
 
-        <NearbyDrivers pickup={pickup} />
+        <NearbyDrivers
+          visible={Boolean(origin)}
+          loading={nearbyQuery.isLoading}
+          count={nearby?.count ?? 0}
+          etaSeconds={nearby?.etaSeconds ?? null}
+        />
 
         <FareEstimate
           pickup={pickup}
