@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getServerConfig } from "../config.server";
 
 // Example createServerFn. Server-side handler invoked from the client:
@@ -9,10 +10,12 @@ import { getServerConfig } from "../config.server";
 // .server.ts modules) are tree-shaken from the client bundle. Module-level
 // code here still ships to the client; for truly server-only helpers, put
 // them in a .server.ts file. Use this pattern instead of Supabase Edge
-// Functions for server logic.
+// Functions for server logic. Auth-gated so it never exposes server config
+// to anonymous callers.
 
 export const getGreeting = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ name: z.string().min(1) }))
+  .middleware([requireSupabaseAuth])
+  .inputValidator(z.object({ name: z.string().min(1).max(100) }))
   .handler(async ({ data }) => {
     const config = getServerConfig();
     return {
