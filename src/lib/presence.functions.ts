@@ -123,7 +123,7 @@ export const getNearbyDrivers = createServerFn({ method: "POST" })
 
     const { data: rows, error } = await supabaseAdmin
       .from("driver_presence")
-      .select("lat, lng, updated_at")
+      .select("lat, lng, heading, updated_at")
       .eq("is_online", true)
       .gte("updated_at", freshSince);
 
@@ -134,13 +134,18 @@ export const getNearbyDrivers = createServerFn({ method: "POST" })
       .map((r) => ({
         lat: r.lat,
         lng: r.lng,
+        heading: (r.heading as number | null) ?? null,
         distance: haversineMeters(pickup, { lat: r.lat, lng: r.lng }),
       }))
       .filter((r) => r.distance <= NEARBY_RADIUS_METERS)
       .sort((a, b) => a.distance - b.distance);
 
+    const positions: NearbyDriverPosition[] = nearby
+      .slice(0, MAX_MAP_DRIVERS)
+      .map((r) => ({ lat: fuzz(r.lat), lng: fuzz(r.lng), heading: r.heading }));
+
     if (nearby.length === 0) {
-      return { count: 0, etaSeconds: null };
+      return { count: 0, etaSeconds: null, positions };
     }
 
     let etaSeconds: number | null = null;
@@ -155,5 +160,5 @@ export const getNearbyDrivers = createServerFn({ method: "POST" })
       etaSeconds = null;
     }
 
-    return { count: nearby.length, etaSeconds };
+    return { count: nearby.length, etaSeconds, positions };
   });
