@@ -131,7 +131,7 @@ export const createDriverOnboardingLink = createServerFn({ method: "POST" })
       if (updateError) throw new Error(updateError.message);
     }
 
-    const origin = resolveOrigin();
+    const origin = resolvePublicOrigin();
     let link;
     try {
       link = await stripe.accountLinks.create({

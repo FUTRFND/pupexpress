@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest, getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -10,19 +9,10 @@ import {
   markRidePaid,
 } from "./payments.server";
 import { assertStripeActionsAllowed } from "./stripe-guard.server";
+import { resolvePublicOrigin } from "./origin.server";
 
 /** States in which a rider is allowed to start (or retry) payment. */
 const PAYABLE_PAYMENT_STATUSES = ["unpaid", "payment_failed"];
-
-function resolveOrigin(): string {
-  const origin = getRequestHeader("origin");
-  if (origin) return origin;
-  try {
-    return new URL(getRequest().url).origin;
-  } catch {
-    return "";
-  }
-}
 
 export interface CheckoutResult {
   url: string;
