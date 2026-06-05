@@ -95,6 +95,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "PupXpress — Rides for your dog" },
+      { name: "description", content: "PupPals Ride is a mobile app for pet transportation ride-sharing." },
+      { property: "og:description", content: "PupPals Ride is a mobile app for pet transportation ride-sharing." },
+      { name: "twitter:description", content: "PupPals Ride is a mobile app for pet transportation ride-sharing." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/dc957415-22a1-4177-b290-83822606ff4b/id-preview-fe36a921--4aeee279-3ae2-4066-8a90-54530c6925d4.lovable.app-1780696512461.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/dc957415-22a1-4177-b290-83822606ff4b/id-preview-fe36a921--4aeee279-3ae2-4066-8a90-54530c6925d4.lovable.app-1780696512461.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
