@@ -92,6 +92,18 @@ const ITEMS: MenuItem[] = [
     to: "/pet-care-guidelines",
   },
   {
+    icon: Lock,
+    label: "Privacy Policy",
+    subtitle: "How we handle your data",
+    to: "/privacy",
+  },
+  {
+    icon: FileText,
+    label: "Terms of Service",
+    subtitle: "The rules for using PupXpress",
+    to: "/terms",
+  },
+  {
     icon: Mail,
     label: "Contact Support",
     subtitle: "support@pupxpress.com",
