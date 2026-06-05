@@ -1,9 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { Car, Loader2 } from "lucide-react";
 
-import { getNearbyDrivers } from "@/lib/presence.functions";
-import type { SelectedPlace } from "@/lib/maps-loader";
 import { cn } from "@/lib/utils";
 
 function formatEta(seconds: number): string {
@@ -12,26 +8,25 @@ function formatEta(seconds: number): string {
 }
 
 /**
- * Shows the rider how many drivers are currently nearby their pickup and how
- * soon the closest one could arrive. Refreshes periodically while a pickup is
- * set. Individual driver locations are never exposed — only the aggregate.
+ * Shows the rider how many drivers are currently nearby and how soon the
+ * closest one could arrive. Driven by the shared nearby-drivers query lifted
+ * into the booking screen (so the map and this banner stay in sync). Individual
+ * driver identities are never exposed — only the aggregate count + ETA.
  */
-export function NearbyDrivers({ pickup }: { pickup: SelectedPlace | null }) {
-  const nearbyFn = useServerFn(getNearbyDrivers);
+export function NearbyDrivers({
+  visible,
+  loading,
+  count,
+  etaSeconds,
+}: {
+  visible: boolean;
+  loading: boolean;
+  count: number;
+  etaSeconds: number | null;
+}) {
+  if (!visible) return null;
 
-  const query = useQuery({
-    queryKey: ["nearby-drivers", pickup?.lat, pickup?.lng],
-    queryFn: () =>
-      nearbyFn({ data: { pickup: { lat: pickup!.lat, lng: pickup!.lng } } }),
-    enabled: Boolean(pickup),
-    refetchInterval: 20000,
-    staleTime: 15000,
-  });
-
-  if (!pickup) return null;
-
-  const data = query.data;
-  const hasDrivers = (data?.count ?? 0) > 0;
+  const hasDrivers = count > 0;
 
   return (
     <div
@@ -48,24 +43,24 @@ export function NearbyDrivers({ pickup }: { pickup: SelectedPlace | null }) {
           hasDrivers ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground",
         )}
       >
-        {query.isLoading ? (
+        {loading ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (
           <Car className="size-4" />
         )}
       </span>
       <div className="min-w-0">
-        {query.isLoading ? (
+        {loading ? (
           <p className="text-muted-foreground">Looking for drivers nearby…</p>
         ) : hasDrivers ? (
           <p>
             <span className="font-medium">
-              {data!.count} {data!.count === 1 ? "driver" : "drivers"} nearby
+              {count} {count === 1 ? "driver" : "drivers"} nearby
             </span>
-            {data!.etaSeconds != null ? (
+            {etaSeconds != null ? (
               <span className="text-muted-foreground">
                 {" "}
-                · {formatEta(data!.etaSeconds)}
+                · {formatEta(etaSeconds)}
               </span>
             ) : null}
           </p>
