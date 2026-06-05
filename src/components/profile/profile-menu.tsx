@@ -15,6 +15,8 @@ import {
   Car,
   ChevronRight,
   Shield,
+  FileText,
+  Lock,
 } from "lucide-react";
 
 import { checkIsAdmin } from "@/lib/admin.functions";
