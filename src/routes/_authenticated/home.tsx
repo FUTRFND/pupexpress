@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -7,8 +7,11 @@ import { Dog, Plus, Loader2 } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useMode } from "@/hooks/use-mode";
+import { useGeolocation } from "@/hooks/use-geolocation";
 import { listPets } from "@/lib/pets.functions";
 import { createRide } from "@/lib/rides.functions";
+import { getNearbyDrivers } from "@/lib/presence.functions";
+import { reverseGeocode } from "@/lib/geo.functions";
 import type { SelectedPlace } from "@/lib/maps-loader";
 import { PlaceAutocomplete } from "@/components/booking/place-autocomplete";
 import { RideMap } from "@/components/booking/ride-map";
@@ -54,6 +57,12 @@ function RiderBooking() {
   const queryClient = useQueryClient();
   const listPetsFn = useServerFn(listPets);
   const createRideFn = useServerFn(createRide);
+  const nearbyFn = useServerFn(getNearbyDrivers);
+  const reverseGeocodeFn = useServerFn(reverseGeocode);
+
+  // Ask for the rider's location on open so the map snaps to them.
+  const { coords: userLocation, status: geoStatus, request: requestLocation } =
+    useGeolocation({ auto: true });
 
   const [pickup, setPickup] = useState<SelectedPlace | null>(null);
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
@@ -66,6 +75,45 @@ function RiderBooking() {
     (q: FareEstimateDTO | null) => setQuote(q),
     [],
   );
+
+  // Prefill pickup with the rider's current location once (reverse-geocoded),
+  // unless they've already chosen one.
+  const prefilledRef = useRef(false);
+  useEffect(() => {
+    if (prefilledRef.current || pickup || !userLocation) return;
+    prefilledRef.current = true;
+    reverseGeocodeFn({ data: { lat: userLocation.lat, lng: userLocation.lng } })
+      .then((res) => {
+        setPickup((current) =>
+          current
+            ? current
+            : {
+                address: res.address,
+                placeId: res.placeId,
+                lat: userLocation.lat,
+                lng: userLocation.lng,
+              },
+        );
+      })
+      .catch(() => {
+        /* non-fatal: rider can still type a pickup */
+      });
+  }, [userLocation, pickup, reverseGeocodeFn]);
+
+  // Drivers shown around the rider — anchored to the pickup, or their live
+  // location before a pickup is chosen.
+  const origin = pickup ?? userLocation;
+  const nearbyQuery = useQuery({
+    queryKey: ["nearby-drivers", origin?.lat, origin?.lng],
+    queryFn: () =>
+      nearbyFn({ data: { pickup: { lat: origin!.lat, lng: origin!.lng } } }),
+    enabled: Boolean(origin),
+    refetchInterval: 15000,
+    staleTime: 10000,
+  });
+  const nearby = nearbyQuery.data;
+
+
 
   const petsQuery = useQuery({
     queryKey: ["pets"],
@@ -135,7 +183,20 @@ function RiderBooking() {
         <CardTitle>Book a ride for your pet</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <RideMap pickup={pickup} destination={destination} />
+        <RideMap
+          pickup={pickup}
+          destination={destination}
+          userLocation={userLocation}
+          driverPositions={nearby?.positions}
+          onLocate={requestLocation}
+        />
+
+        {geoStatus === "denied" ? (
+          <p className="text-xs text-muted-foreground">
+            Location access is off. Enable it in your browser settings or set a
+            pickup manually to see drivers around you.
+          </p>
+        ) : null}
 
         <PlaceAutocomplete
           id="pickup"
@@ -157,7 +218,12 @@ function RiderBooking() {
           enableFavorites
         />
 
-        <NearbyDrivers pickup={pickup} />
+        <NearbyDrivers
+          visible={Boolean(origin)}
+          loading={nearbyQuery.isLoading}
+          count={nearby?.count ?? 0}
+          etaSeconds={nearby?.etaSeconds ?? null}
+        />
 
         <FareEstimate
           pickup={pickup}

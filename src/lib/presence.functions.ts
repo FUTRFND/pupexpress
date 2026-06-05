@@ -67,11 +67,31 @@ export const goOffline = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export interface NearbyDriverPosition {
+  lat: number;
+  lng: number;
+  heading: number | null;
+}
+
 export interface NearbyDriversDTO {
   /** Number of online drivers within the nearby radius of the pickup. */
   count: number;
   /** Estimated pickup time of the closest driver, in seconds (traffic-aware). */
   etaSeconds: number | null;
+  /**
+   * Approximate, ANONYMOUS positions of nearby drivers for the map (no driver
+   * identity attached). Coordinates are rounded to ~11m and capped so a rider
+   * can see live cars around them, Uber-style, without pinpointing a person.
+   */
+  positions: NearbyDriverPosition[];
+}
+
+/** Cap how many car markers we return to the rider. */
+const MAX_MAP_DRIVERS = 15;
+
+/** Round to 4 decimals (~11m) so exact driver coordinates are never exposed. */
+function fuzz(n: number): number {
+  return Math.round(n * 1e4) / 1e4;
 }
 
 function haversineMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -103,7 +123,7 @@ export const getNearbyDrivers = createServerFn({ method: "POST" })
 
     const { data: rows, error } = await supabaseAdmin
       .from("driver_presence")
-      .select("lat, lng, updated_at")
+      .select("lat, lng, heading, updated_at")
       .eq("is_online", true)
       .gte("updated_at", freshSince);
 
@@ -114,13 +134,18 @@ export const getNearbyDrivers = createServerFn({ method: "POST" })
       .map((r) => ({
         lat: r.lat,
         lng: r.lng,
+        heading: (r.heading as number | null) ?? null,
         distance: haversineMeters(pickup, { lat: r.lat, lng: r.lng }),
       }))
       .filter((r) => r.distance <= NEARBY_RADIUS_METERS)
       .sort((a, b) => a.distance - b.distance);
 
+    const positions: NearbyDriverPosition[] = nearby
+      .slice(0, MAX_MAP_DRIVERS)
+      .map((r) => ({ lat: fuzz(r.lat), lng: fuzz(r.lng), heading: r.heading }));
+
     if (nearby.length === 0) {
-      return { count: 0, etaSeconds: null };
+      return { count: 0, etaSeconds: null, positions };
     }
 
     let etaSeconds: number | null = null;
@@ -135,5 +160,5 @@ export const getNearbyDrivers = createServerFn({ method: "POST" })
       etaSeconds = null;
     }
 
-    return { count: nearby.length, etaSeconds };
+    return { count: nearby.length, etaSeconds, positions };
   });
