@@ -79,7 +79,7 @@ export const createRideCheckout = createServerFn({ method: "POST" })
     // (no platform fee on tips).
     const driverEarningsWithTip = Math.round((fees.driverEarnings + tip) * 100) / 100;
     const chargedTotal = Math.round((fees.rideTotal + tip) * 100) / 100;
-    const origin = resolveOrigin();
+    const origin = resolvePublicOrigin();
 
     // Load rider contact details for the Stripe customer.
     const { data: profile } = await supabase
@@ -297,7 +297,7 @@ export const createCancellationFeeCheckout = createServerFn({ method: "POST" })
       }
     }
 
-    const origin = resolveOrigin();
+    const origin = resolvePublicOrigin();
     const { data: profile } = await supabase
       .from("profiles")
       .select("email, full_name")
