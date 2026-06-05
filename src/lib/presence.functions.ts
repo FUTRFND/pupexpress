@@ -67,11 +67,31 @@ export const goOffline = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export interface NearbyDriverPosition {
+  lat: number;
+  lng: number;
+  heading: number | null;
+}
+
 export interface NearbyDriversDTO {
   /** Number of online drivers within the nearby radius of the pickup. */
   count: number;
   /** Estimated pickup time of the closest driver, in seconds (traffic-aware). */
   etaSeconds: number | null;
+  /**
+   * Approximate, ANONYMOUS positions of nearby drivers for the map (no driver
+   * identity attached). Coordinates are rounded to ~11m and capped so a rider
+   * can see live cars around them, Uber-style, without pinpointing a person.
+   */
+  positions: NearbyDriverPosition[];
+}
+
+/** Cap how many car markers we return to the rider. */
+const MAX_MAP_DRIVERS = 15;
+
+/** Round to 4 decimals (~11m) so exact driver coordinates are never exposed. */
+function fuzz(n: number): number {
+  return Math.round(n * 1e4) / 1e4;
 }
 
 function haversineMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
