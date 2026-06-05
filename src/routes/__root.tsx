@@ -79,15 +79,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { title: "PupXpress — Rides for your dog" },
+      {
+        name: "description",
+        content:
+          "PupXpress — book trusted rides for your dog, or drive and earn. Safe, on-demand pet transport.",
+      },
+      { name: "author", content: "PupXpress" },
+      { name: "theme-color", content: "#f97316" },
+      { property: "og:title", content: "PupXpress — Rides for your dog" },
+      {
+        property: "og:description",
+        content: "Book trusted rides for your dog, or drive and earn.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

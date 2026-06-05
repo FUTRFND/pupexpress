@@ -16,6 +16,9 @@ import pupxpressHero from "@/assets/pupxpress-hero.png.asset.json";
 const TOUR_DONE_KEY = "pupx_tour_done";
 
 export const Route = createFileRoute("/")({
+  // Fully client-driven (auth session, localStorage tour flag, splash timing).
+  // SSR'ing it produces a hydration mismatch (React #418); meta still renders.
+  ssr: false,
   head: () => ({
     meta: [
       { title: "PupXpress — Rides for your dog" },
