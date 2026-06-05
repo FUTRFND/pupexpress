@@ -1,20 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest, getRequestHeader } from "@tanstack/react-start/server";
 import process from "node:process";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getStripe, getFeeConfig } from "./stripe.server";
 import { assertStripeActionsAllowed } from "./stripe-guard.server";
+import { resolvePublicOrigin } from "./origin.server";
 
-function resolveOrigin(): string {
-  const origin = getRequestHeader("origin");
-  if (origin) return origin;
-  try {
-    return new URL(getRequest().url).origin;
-  } catch {
-    return "";
-  }
-}
 
 /** Detect whether the configured Stripe secret key is a test or live key. */
 function stripeMode(): "test" | "live" | "unknown" {
@@ -131,7 +122,7 @@ export const createDriverOnboardingLink = createServerFn({ method: "POST" })
       if (updateError) throw new Error(updateError.message);
     }
 
-    const origin = resolveOrigin();
+    const origin = resolvePublicOrigin();
     let link;
     try {
       link = await stripe.accountLinks.create({

@@ -34,7 +34,13 @@ export const ensureDriverRole = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     if (profile.role === "rider") {
-      const { error: updateError } = await supabase
+      // The role column is locked to the service role by a DB trigger to block
+      // direct client-side privilege changes, so the upgrade runs through the
+      // admin client (scoped to self by id).
+      const { supabaseAdmin } = await import(
+        "@/integrations/supabase/client.server"
+      );
+      const { error: updateError } = await supabaseAdmin
         .from("profiles")
         .update({ role: "both" })
         .eq("id", userId);
