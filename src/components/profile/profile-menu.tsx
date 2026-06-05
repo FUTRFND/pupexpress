@@ -15,6 +15,8 @@ import {
   Car,
   ChevronRight,
   Shield,
+  FileText,
+  Lock,
 } from "lucide-react";
 
 import { checkIsAdmin } from "@/lib/admin.functions";
@@ -88,6 +90,18 @@ const ITEMS: MenuItem[] = [
     label: "Pet Care Guidelines",
     subtitle: "Keep every ride safe & comfortable",
     to: "/pet-care-guidelines",
+  },
+  {
+    icon: Lock,
+    label: "Privacy Policy",
+    subtitle: "How we handle your data",
+    to: "/privacy",
+  },
+  {
+    icon: FileText,
+    label: "Terms of Service",
+    subtitle: "The rules for using PupXpress",
+    to: "/terms",
   },
   {
     icon: Mail,

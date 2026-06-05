@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -164,6 +164,18 @@ function AuthScreen() {
         </div>
 
         <EmailAuth busy={busy} setBusy={setBusy} />
+
+        <p className="text-center text-xs text-muted-foreground">
+          By continuing you agree to our{" "}
+          <Link to="/terms" className="font-medium text-primary underline-offset-4 hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy" className="font-medium text-primary underline-offset-4 hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </main>
     </div>
   );
