@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -7,8 +7,11 @@ import { Dog, Plus, Loader2 } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useMode } from "@/hooks/use-mode";
+import { useGeolocation } from "@/hooks/use-geolocation";
 import { listPets } from "@/lib/pets.functions";
 import { createRide } from "@/lib/rides.functions";
+import { getNearbyDrivers } from "@/lib/presence.functions";
+import { reverseGeocode } from "@/lib/geo.functions";
 import type { SelectedPlace } from "@/lib/maps-loader";
 import { PlaceAutocomplete } from "@/components/booking/place-autocomplete";
 import { RideMap } from "@/components/booking/ride-map";
