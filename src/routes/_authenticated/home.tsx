@@ -183,7 +183,20 @@ function RiderBooking() {
         <CardTitle>Book a ride for your pet</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <RideMap pickup={pickup} destination={destination} />
+        <RideMap
+          pickup={pickup}
+          destination={destination}
+          userLocation={userLocation}
+          driverPositions={nearby?.positions}
+          onLocate={requestLocation}
+        />
+
+        {geoStatus === "denied" ? (
+          <p className="text-xs text-muted-foreground">
+            Location access is off. Enable it in your browser settings or set a
+            pickup manually to see drivers around you.
+          </p>
+        ) : null}
 
         <PlaceAutocomplete
           id="pickup"
