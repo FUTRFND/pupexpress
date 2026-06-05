@@ -57,6 +57,12 @@ function RiderBooking() {
   const queryClient = useQueryClient();
   const listPetsFn = useServerFn(listPets);
   const createRideFn = useServerFn(createRide);
+  const nearbyFn = useServerFn(getNearbyDrivers);
+  const reverseGeocodeFn = useServerFn(reverseGeocode);
+
+  // Ask for the rider's location on open so the map snaps to them.
+  const { coords: userLocation, status: geoStatus, request: requestLocation } =
+    useGeolocation({ auto: true });
 
   const [pickup, setPickup] = useState<SelectedPlace | null>(null);
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
@@ -69,6 +75,45 @@ function RiderBooking() {
     (q: FareEstimateDTO | null) => setQuote(q),
     [],
   );
+
+  // Prefill pickup with the rider's current location once (reverse-geocoded),
+  // unless they've already chosen one.
+  const prefilledRef = useRef(false);
+  useEffect(() => {
+    if (prefilledRef.current || pickup || !userLocation) return;
+    prefilledRef.current = true;
+    reverseGeocodeFn({ data: { lat: userLocation.lat, lng: userLocation.lng } })
+      .then((res) => {
+        setPickup((current) =>
+          current
+            ? current
+            : {
+                address: res.address,
+                placeId: res.placeId,
+                lat: userLocation.lat,
+                lng: userLocation.lng,
+              },
+        );
+      })
+      .catch(() => {
+        /* non-fatal: rider can still type a pickup */
+      });
+  }, [userLocation, pickup, reverseGeocodeFn]);
+
+  // Drivers shown around the rider — anchored to the pickup, or their live
+  // location before a pickup is chosen.
+  const origin = pickup ?? userLocation;
+  const nearbyQuery = useQuery({
+    queryKey: ["nearby-drivers", origin?.lat, origin?.lng],
+    queryFn: () =>
+      nearbyFn({ data: { pickup: { lat: origin!.lat, lng: origin!.lng } } }),
+    enabled: Boolean(origin),
+    refetchInterval: 15000,
+    staleTime: 10000,
+  });
+  const nearby = nearbyQuery.data;
+
+
 
   const petsQuery = useQuery({
     queryKey: ["pets"],
