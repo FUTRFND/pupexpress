@@ -125,6 +125,44 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+/**
+ * Mobile-safe startup watchdog.
+ *
+ * Runs in the document before React hydrates. If the app has not signalled
+ * readiness within a timeout (silent JS crash, blocked URL, or a dead network
+ * inside the iOS WebView), it replaces the blank white screen with a visible
+ * "couldn't connect" message and a Retry button instead of leaving the user
+ * staring at nothing. React sets `window.__APP_READY__ = true` once it mounts,
+ * which cancels the watchdog.
+ */
+const BOOT_WATCHDOG = `
+(function () {
+  if (window.__pupxBoot) return;
+  window.__pupxBoot = true;
+  var TIMEOUT = 12000;
+  function showError() {
+    if (window.__APP_READY__ || document.getElementById('pupx-boot-error')) return;
+    var el = document.createElement('div');
+    el.id = 'pupx-boot-error';
+    el.setAttribute('style', 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;background:#fff;color:#1c1917;font-family:-apple-system,system-ui,Inter,sans-serif;');
+    el.innerHTML =
+      '<div style="font-size:40px">🐾</div>' +
+      '<div style="font-size:18px;font-weight:600">Couldn\\'t connect</div>' +
+      '<div style="font-size:14px;color:#78716c;max-width:280px">PupXpress couldn\\'t reach the network. Check your connection and try again.</div>' +
+      '<button id="pupx-boot-retry" style="margin-top:8px;padding:12px 24px;border:0;border-radius:12px;background:#f97316;color:#fff;font-size:16px;font-weight:600">Retry</button>';
+    document.body.appendChild(el);
+    var btn = document.getElementById('pupx-boot-retry');
+    if (btn) btn.addEventListener('click', function () { window.location.reload(); });
+  }
+  setTimeout(showError, TIMEOUT);
+  window.addEventListener('error', function (e) {
+    if (e && e.message && /ChunkLoadError|Loading chunk|dynamically imported module/i.test(String(e.message))) {
+      setTimeout(showError, 1500);
+    }
+  });
+})();
+`;
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
@@ -134,6 +172,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <body>
         {children}
         <Scripts />
+        <script dangerouslySetInnerHTML={{ __html: BOOT_WATCHDOG }} />
       </body>
     </html>
   );
@@ -141,6 +180,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    // Signal a successful boot so the startup watchdog stands down and any
+    // fallback error screen it may have shown is cleared.
+    if (typeof window !== "undefined") {
+      (window as unknown as { __APP_READY__?: boolean }).__APP_READY__ = true;
+      const fallback = document.getElementById("pupx-boot-error");
+      if (fallback) fallback.remove();
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
