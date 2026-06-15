@@ -4,28 +4,37 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * Capacitor configuration for the PupXpress native (iOS / Android) builds.
  *
  * The app is a server-rendered TanStack Start web app, so the native shell
- * loads the hosted site directly via `server.url`. This keeps a single source
- * of truth (the deployed web app) and gives instant updates without re-shipping
- * the native binary for every change.
+ * loads the hosted site directly via `server.url`. This MUST be the published,
+ * publicly-accessible production URL — NOT a Lovable `id-preview--…` URL.
+ *
+ * Preview URLs require a Lovable login and return a 302 redirect to an auth
+ * wall, which the iOS WebView cannot pass — the result is a blank white screen
+ * on a real device even though the web preview works in a logged-in browser.
  *
  * To build natively:
  *   1. Export the project to GitHub and `git clone` it locally.
  *   2. `npm install`
  *   3. `npx cap add ios` and/or `npx cap add android`
- *   4. `npx cap sync`
- *   5. `npx cap run ios` / `npx cap run android` (requires Xcode / Android Studio)
- *
- * For production, point `server.url` at your published URL (or remove `server`
- * entirely and bundle a static build).
+ *   4. `npm run build`
+ *   5. `npx cap sync ios`
+ *   6. Open Xcode, confirm the Bundle Identifier is `com.pupxpress.app`,
+ *      then Archive + upload to TestFlight.
  */
 const config: CapacitorConfig = {
-  appId: "app.pupxpress.dogride",
+  appId: "com.pupxpress.app",
   appName: "PupXpress",
   webDir: "dist",
   server: {
-    // Live-reload / hosted shell. Replace with your published URL when live.
-    url: "https://id-preview--4aeee279-3ae2-4066-8a90-54530c6925d4.lovable.app",
-    cleartext: true,
+    // Published production URL — must be publicly reachable (HTTP 200) without
+    // a login wall. Verified: https://pupexpress.lovable.app returns 200.
+    url: "https://pupexpress.lovable.app",
+    // HTTPS only — no cleartext needed and ATS stays strict for security.
+    cleartext: false,
+  },
+  ios: {
+    // Show the native launch screen until the web content is ready instead of
+    // flashing a white WebView.
+    backgroundColor: "#ffffff",
   },
   plugins: {
     PushNotifications: {
