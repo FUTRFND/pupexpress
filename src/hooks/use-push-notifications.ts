@@ -1,56 +1,25 @@
 import { useEffect } from "react";
 
-import { registerDeviceToken } from "@/lib/push.functions";
+import { enableNativePush } from "@/lib/native-push";
 
 /**
  * Registers the device for push notifications on native (iOS / Android) builds.
  *
  * No-op in the browser / Lovable preview — web push is handled separately and
- * the Capacitor PushNotifications plugin only exists inside the native shell.
- * Everything Capacitor-related is imported dynamically inside the effect so the
- * web/SSR bundle never evaluates native code paths (which touch `window`).
+ * the Firebase Messaging plugin only exists inside the native shell. All
+ * Capacitor / Firebase imports live in `native-push.ts` and are loaded
+ * dynamically so the web/SSR bundle never evaluates native code paths.
+ *
+ * On iOS this now returns a real FCM registration token (via
+ * `@capacitor-firebase/messaging`), which is what our FCM HTTP v1 sender
+ * expects — the previous `@capacitor/push-notifications` path returned only the
+ * raw APNs token, which Firebase Admin cannot deliver to.
  */
 export function usePushNotifications(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const { Capacitor } = await import("@capacitor/core");
-        if (!Capacitor.isNativePlatform()) return;
-
-        const { PushNotifications } = await import(
-          "@capacitor/push-notifications"
-        );
-
-        const status = await PushNotifications.checkPermissions();
-        let receive = status.receive;
-        if (receive === "prompt" || receive === "prompt-with-rationale") {
-          receive = (await PushNotifications.requestPermissions()).receive;
-        }
-        if (receive !== "granted" || cancelled) return;
-
-        await PushNotifications.addListener("registration", (token) => {
-          const platform = Capacitor.getPlatform() === "ios" ? "ios" : "android";
-          registerDeviceToken({
-            data: { token: token.value, platform },
-          }).catch((err) => console.error("Token register failed:", err));
-        });
-
-        await PushNotifications.addListener("registrationError", (err) => {
-          console.error("Push registration error:", err);
-        });
-
-        await PushNotifications.register();
-      } catch (err) {
-        console.error("Push notification setup failed:", err);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    enableNativePush().catch((err) =>
+      console.error("Push notification setup failed:", err),
+    );
   }, [enabled]);
 }

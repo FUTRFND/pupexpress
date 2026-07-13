@@ -65,6 +65,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router, queryClient]);
 
   const signOut = async () => {
+    // Remove the device's push token before dropping the session so a
+    // signed-out device stops receiving notifications (native only; no-op web).
+    const { disableNativePush } = await import("@/lib/native-push");
+    await disableNativePush();
     await supabase.auth.signOut();
   };
 
