@@ -5,11 +5,24 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+  },
+  vite: {
+    resolve: {
+      alias: {
+        // `@capacitor-firebase/messaging` statically imports `firebase/messaging`
+        // in its web-only path, which we never use (native-only push). Alias it
+        // to a stub so the bundle builds without the full Firebase JS SDK.
+        "firebase/messaging": fileURLToPath(
+          new URL("./src/lib/firebase-messaging-web-stub.ts", import.meta.url),
+        ),
+      },
+    },
   },
 });
