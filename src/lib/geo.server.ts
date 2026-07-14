@@ -19,8 +19,14 @@ export async function reverseGeocodeCoord(
 ): Promise<ReverseGeocodeResult> {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const mapsKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (!lovableKey) throw new Error("LOVABLE_API_KEY is not configured.");
-  if (!mapsKey) throw new Error("GOOGLE_MAPS_API_KEY is not configured.");
+  // Degrade gracefully when the server-side Maps key isn't linked yet: return
+  // a coord-string address instead of throwing so the booking UI stays usable.
+  if (!lovableKey || !mapsKey) {
+    return {
+      address: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+      placeId: null,
+    };
+  }
 
   const res = await fetch(
     `${GATEWAY_URL}/maps/api/geocode/json?latlng=${encodeURIComponent(
