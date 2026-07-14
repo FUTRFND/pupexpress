@@ -59,17 +59,44 @@ export interface Coord {
 }
 
 /**
+ * Straight-line haversine fallback used when the Google Maps connector isn't
+ * available. Assumes ~40 km/h average urban drive speed with a 1.3x road
+ * detour factor so quotes stay in a sensible range.
+ */
+function estimateRouteFallback(origin: Coord, destination: Coord): RouteResult {
+  const R = 6371000; // meters
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(destination.lat - origin.lat);
+  const dLng = toRad(destination.lng - origin.lng);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(origin.lat)) *
+      Math.cos(toRad(destination.lat)) *
+      Math.sin(dLng / 2) ** 2;
+  const straight = 2 * R * Math.asin(Math.sqrt(a));
+  const distanceMeters = Math.round(straight * 1.3);
+  const durationSeconds = Math.round((distanceMeters / 1000 / 40) * 3600);
+  return { distanceMeters, durationSeconds };
+}
+
+/**
  * Fetch the driving route between two coordinates via the connector gateway.
  * Returns distance (meters) and duration (seconds), or throws on failure.
  */
+
 export async function fetchRoute(
   origin: Coord,
   destination: Coord,
 ): Promise<RouteResult> {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const mapsKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (!lovableKey) throw new Error("LOVABLE_API_KEY is not configured.");
-  if (!mapsKey) throw new Error("GOOGLE_MAPS_API_KEY is not configured.");
+  if (!lovableKey || !mapsKey) {
+    // Graceful degrade when the Google Maps connector isn't linked yet:
+    // estimate distance/duration from a straight-line haversine so quoting
+    // still works instead of crashing the UI with a runtime error.
+    return estimateRouteFallback(origin, destination);
+  }
+
 
   const res = await fetch(`${GATEWAY_URL}/routes/directions/v2:computeRoutes`, {
     method: "POST",
