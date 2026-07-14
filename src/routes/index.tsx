@@ -109,6 +109,39 @@ function WelcomePage() {
   return <AuthScreen />;
 }
 
+const TAGLINES = [
+  "Where Every Paw Has a Safe Ride Home",
+  "On-demand pet transportation for vet visits, grooming, daycare, and adventures.",
+];
+
+function TaglineSlider() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((i) => (i + 1) % TAGLINES.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative mx-auto mt-3 h-12 max-w-xs overflow-hidden text-center">
+      {TAGLINES.map((line, i) => (
+        <p
+          key={line}
+          className="absolute inset-0 flex items-center justify-center px-4 text-sm font-medium leading-tight text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)] transition-all duration-700 ease-out"
+          style={{
+            transform: `translateY(${(i - index) * 100}%)`,
+            opacity: i === index ? 1 : 0,
+          }}
+        >
+          {line}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 function AuthScreen() {
   const [busy, setBusy] = useState(false);
 
@@ -144,6 +177,7 @@ function AuthScreen() {
           alt="PupXpress"
           className="relative h-20 w-auto drop-shadow-[0_4px_16px_rgba(0,0,0,0.15)]"
         />
+        <TaglineSlider />
       </header>
 
       <main className="relative z-10 -mt-8 flex flex-col gap-5 rounded-t-3xl bg-background px-6 py-8 shadow-[var(--shadow-elegant)]">
