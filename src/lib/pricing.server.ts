@@ -68,8 +68,13 @@ export async function fetchRoute(
 ): Promise<RouteResult> {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const mapsKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (!lovableKey) throw new Error("LOVABLE_API_KEY is not configured.");
-  if (!mapsKey) throw new Error("GOOGLE_MAPS_API_KEY is not configured.");
+  if (!lovableKey || !mapsKey) {
+    // Graceful degrade when the Google Maps connector isn't linked yet:
+    // estimate distance/duration from a straight-line haversine so quoting
+    // still works instead of crashing the UI with a runtime error.
+    return estimateRouteFallback(origin, destination);
+  }
+
 
   const res = await fetch(`${GATEWAY_URL}/routes/directions/v2:computeRoutes`, {
     method: "POST",
