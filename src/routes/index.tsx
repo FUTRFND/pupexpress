@@ -250,6 +250,14 @@ function EmailAuth({
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+          <div className="-mt-1 flex justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <Button type="submit" className="h-11 w-full" disabled={busy}>
             Sign in
           </Button>
