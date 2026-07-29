@@ -1,4 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useMode } from "@/hooks/use-mode";
@@ -14,6 +18,20 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { deleteMyAccount } from "@/lib/account.functions";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -23,6 +41,26 @@ function ProfilePage() {
   const { user, signOut } = useAuth();
   const { mode, setMode } = useMode();
   const navigate = useNavigate();
+  const deleteAccountFn = useServerFn(deleteMyAccount);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const { disableNativePush } = await import("@/lib/native-push");
+      await disableNativePush();
+      await deleteAccountFn();
+    },
+    onSuccess: async () => {
+      await supabase.auth.signOut({ scope: "local" });
+      setDeleteOpen(false);
+      navigate({ to: "/", replace: true });
+      toast.success("Your account has been permanently deleted.");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Account deletion failed.");
+    },
+  });
 
   const name =
     (user?.user_metadata?.full_name as string | undefined) ??
@@ -89,6 +127,54 @@ function ProfilePage() {
       <Button variant="destructive" className="h-11" onClick={handleSignOut}>
         Sign out
       </Button>
+
+      <Card className="border-destructive/40">
+        <CardHeader>
+          <CardTitle className="text-base text-destructive">Delete Account</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Permanently delete your account, profile, pets, ride history, messages,
+            saved locations, uploaded documents, and notification data.
+          </p>
+          <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">Delete Account</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="max-w-md rounded-lg">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete your account permanently?</AlertDialogTitle>
+                <AlertDialogDescription asChild>
+                  <div className="space-y-3">
+                    <p>This cannot be undone. Type DELETE to confirm.</p>
+                    <Input
+                      aria-label="Type DELETE to confirm account deletion"
+                      autoCapitalize="characters"
+                      autoComplete="off"
+                      value={deleteConfirmation}
+                      onChange={(event) => setDeleteConfirmation(event.target.value)}
+                      placeholder="DELETE"
+                    />
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={deleteConfirmation !== "DELETE" || deleteMutation.isPending}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    deleteMutation.mutate();
+                  }}
+                >
+                  {deleteMutation.isPending ? "Deleting…" : "Delete permanently"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
+      </Card>
     </div>
   );
 }

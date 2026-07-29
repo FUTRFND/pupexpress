@@ -16,6 +16,8 @@ interface AuthContextValue {
   user: User | null;
   /** True until the initial session has been hydrated on the client. */
   loading: boolean;
+  initializationError: string | null;
+  retryInitialization: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -35,11 +37,28 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initializationError, setInitializationError] = useState<string | null>(null);
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  const hydrateSession = async () => {
+    setLoading(true);
+    setInitializationError(null);
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      setSession(data.session);
+    } catch {
+      setSession(null);
+      setInitializationError("We couldn't verify your saved session. You can retry or sign in again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
+    let removeOAuthHandlers: (() => void) | undefined;
 
     // Listener first so we never miss an event during hydration.
     const {
@@ -47,20 +66,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!mounted) return;
       setSession(nextSession);
+      setInitializationError(null);
       setLoading(false);
       router.invalidate();
       queryClient.invalidateQueries();
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setSession(data.session);
-      setLoading(false);
-    });
+    void hydrateSession();
+
+    void import("@/lib/oauth")
+      .then(({ initializeOAuthCallbackHandling }) => initializeOAuthCallbackHandling())
+      .then((remove) => {
+        if (mounted) removeOAuthHandlers = remove;
+        else remove();
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setInitializationError("Native sign-in could not be initialized. Please retry.");
+        setLoading(false);
+      });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      removeOAuthHandlers?.();
     };
   }, [router, queryClient]);
 
@@ -74,7 +103,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, user: session?.user ?? null, loading, signOut }}
+      value={{
+        session,
+        user: session?.user ?? null,
+        loading,
+        initializationError,
+        retryInitialization: hydrateSession,
+        signOut,
+      }}
     >
       {children}
     </AuthContext.Provider>

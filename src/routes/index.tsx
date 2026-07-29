@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { OAUTH_COMPLETE_EVENT, signInWithProvider, type OAuthProvider } from "@/lib/oauth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -144,26 +144,36 @@ function TaglineSlider() {
 
 function AuthScreen() {
   const [busy, setBusy] = useState(false);
+  const { initializationError, retryInitialization } = useAuth();
 
-  const handleGoogle = async () => {
-    setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
+  useEffect(() => {
+    const handleComplete = (event: Event) => {
       setBusy(false);
-      toast.error("Google sign-in failed. Please try again.");
-      return;
+      const error = (event as CustomEvent<{ error?: string }>).detail?.error;
+      if (error) toast.error(error);
+    };
+    window.addEventListener(OAUTH_COMPLETE_EVENT, handleComplete);
+    return () => window.removeEventListener(OAUTH_COMPLETE_EVENT, handleComplete);
+  }, []);
+
+  const handleOAuth = async (provider: OAuthProvider) => {
+    setBusy(true);
+    try {
+      const { pending } = await signInWithProvider(provider);
+      if (!pending) setBusy(false);
+    } catch (error) {
+      setBusy(false);
+      toast.error(
+        error instanceof Error ? error.message : `${provider === "apple" ? "Apple" : "Google"} sign-in failed.`,
+      );
     }
-    // On redirect the browser navigates away; on token flow the auth
-    // listener picks up the session and routes us into the app.
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col overflow-y-auto">
       <header
-        className="relative flex flex-1 flex-col items-center overflow-hidden px-6 text-center"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 3rem)" }}
+        className="relative flex h-[clamp(10rem,26dvh,17rem)] shrink-0 flex-col items-center overflow-hidden px-6 text-center"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 2rem)" }}
       >
         <img
           src={pupxpressHero.url}
@@ -180,15 +190,37 @@ function AuthScreen() {
         <TaglineSlider />
       </header>
 
-      <main className="relative z-10 -mt-8 flex flex-col gap-5 rounded-t-3xl bg-background px-6 py-8 shadow-[var(--shadow-elegant)]">
+      <main className="relative z-10 mx-auto -mt-8 flex w-full max-w-lg flex-col gap-4 rounded-t-3xl bg-background px-6 py-6 shadow-[var(--shadow-elegant)] sm:mb-6 sm:rounded-3xl">
+        {initializationError ? (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm" role="alert">
+            <p>{initializationError}</p>
+            <button
+              type="button"
+              className="mt-2 font-semibold text-primary underline underline-offset-4"
+              onClick={() => void retryInitialization()}
+            >
+              Try again
+            </button>
+          </div>
+        ) : null}
+
         <Button
           variant="outline"
           className="h-12 w-full text-base"
-          onClick={handleGoogle}
+          onClick={() => void handleOAuth("google")}
           disabled={busy}
         >
           <GoogleIcon />
           Continue with Google
+        </Button>
+
+        <Button
+          className="h-12 w-full bg-black text-base text-white hover:bg-black/90"
+          onClick={() => void handleOAuth("apple")}
+          disabled={busy}
+        >
+          <AppleIcon />
+          Continue with Apple
         </Button>
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -229,28 +261,38 @@ function EmailAuth({
   const handleSignIn = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) toast.error(error.message);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) toast.error(error.message);
+    } catch {
+      toast.error("Sign in failed. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleSignUp = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { full_name: fullName },
-      },
-    });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { full_name: fullName },
+        },
+      });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success("Check your email to confirm your account.");
+    } catch {
+      toast.error("Registration failed. Check your connection and try again.");
+    } finally {
+      setBusy(false);
     }
-    toast.success("Check your email to confirm your account.");
   };
 
   return (
@@ -361,6 +403,14 @@ function GoogleIcon() {
         fill="#EA4335"
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38Z"
       />
+    </svg>
+  );
+}
+
+function AppleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden="true">
+      <path d="M17.05 12.54c-.02-2.17 1.77-3.23 1.85-3.28a3.98 3.98 0 0 0-3.14-1.7c-1.32-.14-2.6.79-3.27.79-.68 0-1.7-.78-2.81-.76a4.15 4.15 0 0 0-3.5 2.13c-1.52 2.63-.39 6.49 1.07 8.62.73 1.04 1.59 2.21 2.7 2.17 1.09-.05 1.5-.7 2.82-.7 1.3 0 1.69.7 2.83.68 1.17-.02 1.91-1.05 2.61-2.1a8.56 8.56 0 0 0 1.2-2.46 3.77 3.77 0 0 1-2.36-3.39Zm-2.15-6.38a3.84 3.84 0 0 0 .88-2.76 3.9 3.9 0 0 0-2.54 1.31 3.65 3.65 0 0 0-.9 2.66 3.22 3.22 0 0 0 2.56-1.21Z" />
     </svg>
   );
 }
