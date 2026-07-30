@@ -9,6 +9,8 @@ export const OAUTH_CALLBACK_URL = "com.pupxpress.app://auth/callback";
 export const OAUTH_COMPLETE_EVENT = "pupx-oauth-complete";
 
 const OAUTH_STATE_KEY = "pupx_oauth_state";
+const NATIVE_OAUTH_STATE_PREFIX = "pupx-native.";
+const NATIVE_OAUTH_BRIDGE_PATH = "/native-oauth-callback.html";
 let nativeOAuthPending = false;
 let callbackInProgress = false;
 
@@ -19,9 +21,7 @@ function randomState(): string {
 }
 
 function notifyOAuthComplete(error?: string) {
-  window.dispatchEvent(
-    new CustomEvent(OAUTH_COMPLETE_EVENT, { detail: error ? { error } : {} }),
-  );
+  window.dispatchEvent(new CustomEvent(OAUTH_COMPLETE_EVENT, { detail: error ? { error } : {} }));
 }
 
 async function finishNativeOAuth(rawUrl: string): Promise<void> {
@@ -119,9 +119,7 @@ export async function initializeOAuthCallbackHandling(): Promise<() => void> {
  * Starts OAuth in SFSafariViewController on iOS. Web continues to use the
  * existing Lovable/Supabase broker flow.
  */
-export async function signInWithProvider(
-  provider: OAuthProvider,
-): Promise<{ pending: boolean }> {
+export async function signInWithProvider(provider: OAuthProvider): Promise<{ pending: boolean }> {
   if (!Capacitor.isNativePlatform()) {
     const result = await lovable.auth.signInWithOAuth(provider, {
       redirect_uri: window.location.origin,
@@ -131,13 +129,16 @@ export async function signInWithProvider(
   }
 
   const { Browser } = await import("@capacitor/browser");
-  const state = randomState();
+  const state = `${NATIVE_OAUTH_STATE_PREFIX}${randomState()}`;
   sessionStorage.setItem(OAUTH_STATE_KEY, state);
   nativeOAuthPending = true;
 
   const params = new URLSearchParams({
     provider,
-    redirect_uri: OAUTH_CALLBACK_URL,
+    // Lovable's OAuth broker only permits HTTPS redirects on the published
+    // project origin. A tiny static bridge page immediately forwards the
+    // response to the app's registered custom URL scheme.
+    redirect_uri: new URL(NATIVE_OAUTH_BRIDGE_PATH, window.location.origin).toString(),
     state,
   });
   const brokerUrl = new URL("/~oauth/initiate", window.location.origin);
