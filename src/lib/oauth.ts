@@ -13,6 +13,7 @@ const NATIVE_OAUTH_STATE_PREFIX = "pupx-native.";
 const NATIVE_OAUTH_BRIDGE_PATH = "/native-oauth-callback.html";
 let nativeOAuthPending = false;
 let callbackInProgress = false;
+let nativeAppleInitialization: Promise<void> | undefined;
 
 function randomState(): string {
   const bytes = new Uint8Array(24);
@@ -20,8 +21,66 @@ function randomState(): string {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+async function sha256(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 function notifyOAuthComplete(error?: string) {
   window.dispatchEvent(new CustomEvent(OAUTH_COMPLETE_EVENT, { detail: error ? { error } : {} }));
+}
+
+async function signInWithNativeApple(): Promise<void> {
+  const { SocialLogin } = await import("@capgo/capacitor-social-login");
+  nativeAppleInitialization ??= SocialLogin.initialize({
+    apple: {
+      clientId: "com.pupxpress.app",
+    },
+  });
+  await nativeAppleInitialization;
+
+  const rawNonce = randomState();
+  const state = randomState();
+
+  const login = await SocialLogin.login({
+    provider: "apple",
+    options: {
+      scopes: ["email", "name"],
+      state,
+      // Apple receives the digest while Supabase receives the original nonce.
+      nonce: await sha256(rawNonce),
+    },
+  });
+
+  const identityToken = login.result.idToken;
+  if (!identityToken) {
+    throw new Error("Apple did not return an identity token. Please try again.");
+  }
+
+  const { error } = await supabase.auth.signInWithIdToken({
+    provider: "apple",
+    token: identityToken,
+    nonce: rawNonce,
+  });
+  if (error) throw error;
+
+  const givenName = login.result.profile.givenName?.trim();
+  const familyName = login.result.profile.familyName?.trim();
+  const fullName = [givenName, familyName].filter(Boolean).join(" ");
+
+  // Apple supplies the name only on first authorization, so persist it when
+  // available without making an otherwise-successful sign-in depend on it.
+  if (fullName) {
+    await supabase.auth
+      .updateUser({
+        data: {
+          full_name: fullName,
+          given_name: givenName,
+          family_name: familyName,
+        },
+      })
+      .catch(() => {});
+  }
 }
 
 async function finishNativeOAuth(rawUrl: string): Promise<void> {
@@ -126,6 +185,11 @@ export async function signInWithProvider(provider: OAuthProvider): Promise<{ pen
     });
     if (result.error) throw result.error;
     return { pending: Boolean(result.redirected) };
+  }
+
+  if (provider === "apple") {
+    await signInWithNativeApple();
+    return { pending: false };
   }
 
   const { Browser } = await import("@capacitor/browser");
