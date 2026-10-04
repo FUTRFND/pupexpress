@@ -1,6 +1,8 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-import { supabase } from "@/integrations/supabase/client";
+import { readPersistedSession } from "@/integrations/supabase/client";
+import { markInteractive, markStartup } from "@/lib/startup-performance";
 import { AppHeader } from "@/components/app-header";
 import { AppTabBar } from "@/components/app-tab-bar";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
@@ -11,18 +13,19 @@ import { usePushNotifications } from "@/hooks/use-push-notifications";
  * - `ssr: false` keeps this subtree client-rendered, so the gate reads the
  *   localStorage-backed session and never fights SSR (no redirect loops on
  *   hard refresh).
- * - `getUser()` re-validates the session with the Auth server before any
- *   protected page renders.
+ * - Reads the already-persisted local session synchronously. Remote refresh is
+ *   performed in the background by AuthProvider and never blocks rendering.
  * - Unauthenticated users are sent to the welcome/auth screen at "/".
  */
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
+  beforeLoad: () => {
+    const session = readPersistedSession();
+    markStartup("T9_ROUTE_DECISION", session ? "authenticated route" : "sign-in route");
+    if (!session?.user) {
       throw redirect({ to: "/" });
     }
-    return { user: data.user };
+    return { user: session.user };
   },
   component: AuthenticatedLayout,
 });
@@ -30,6 +33,11 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   // Registers native push tokens (no-op in the browser / preview).
   usePushNotifications(true);
+
+  useEffect(() => {
+    markStartup("T10_FIRST_SCREEN", "authenticated shell");
+    markInteractive("authenticated shell");
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

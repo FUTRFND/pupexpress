@@ -16,18 +16,25 @@ import type { CapacitorConfig } from "@capacitor/cli";
  *   2. `npm install`
  *   3. `npx cap add ios` and/or `npx cap add android`
  *   4. `npm run build`
- *   5. `npx cap sync ios`
+ *   5. `npx cap sync ios` or `npx cap sync android`
  *   6. Open Xcode, confirm the Bundle Identifier is `com.pupxpress.app`,
  *      then Archive + upload to TestFlight.
  */
 const config: CapacitorConfig = {
   appId: "com.pupxpress.app",
   appName: "PupXpress",
-  webDir: "dist",
+  // TanStack Start emits the browser fallback assets here. The native shell
+  // normally uses server.url, but valid local assets keep Capacitor sync and
+  // offline/error fallback behavior deterministic.
+  webDir: ".output/public",
   server: {
     // Published production URL — must be publicly reachable (HTTP 200) without
     // a login wall. Verified: https://pupexpress.lovable.app returns 200.
     url: "https://pupexpress.lovable.app",
+    // If the hosted shell cannot load (offline, DNS, TLS, or provider outage),
+    // Capacitor serves this bundled page instead of a blank/native WebView
+    // error. The retry remains entirely local until the user requests it.
+    errorPath: "offline.html",
     // HTTPS only — no cleartext needed and ATS stays strict for security.
     cleartext: false,
   },

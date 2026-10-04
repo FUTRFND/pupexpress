@@ -3,6 +3,9 @@ import { createRouter } from "@tanstack/react-router";
 
 import { routeTree } from "./routeTree.gen";
 import { reportLovableError } from "./lib/lovable-error-reporting";
+import { markStartup } from "./lib/startup-performance";
+
+markStartup("T3_JAVASCRIPT_READY");
 
 function DefaultErrorComponent({ error }: { error: Error }) {
   console.error(error);

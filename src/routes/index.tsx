@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { OAUTH_COMPLETE_EVENT, signInWithProvider, type OAuthProvider } from "@/lib/oauth";
+import { markInteractive, markStartup } from "@/lib/startup-performance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "PupXpress (Dogeride) — book trusted rides for your dog, or drive and earn. Sign in to get started.",
+          "PupXpress — book trusted rides for your dog, or drive and earn. Sign in to get started.",
       },
       { property: "og:title", content: "PupXpress — Rides for your dog" },
       {
@@ -38,6 +39,11 @@ export const Route = createFileRoute("/")({
 });
 
 function Splash() {
+  useEffect(() => {
+    markStartup("T10_FIRST_SCREEN", "splash");
+    markInteractive("splash");
+  }, []);
+
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden">
       <img
@@ -68,24 +74,23 @@ function WelcomePage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [phase, setPhase] = useState<"splash" | "tour" | "auth">("splash");
-  // Hold the splash on screen briefly so the brand moment is visible.
+  // Keep a short brand moment without delaying the login screen.
   const [splashElapsed, setSplashElapsed] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setSplashElapsed(true), 1900);
+    const t = setTimeout(() => setSplashElapsed(true), 900);
     return () => clearTimeout(t);
   }, []);
 
   // Once auth has resolved and the splash has shown, decide where to go.
   useEffect(() => {
     if (loading || !splashElapsed) return;
+    markStartup("T9_ROUTE_DECISION", user ? "home" : "sign in");
     if (user) {
       navigate({ to: "/home", replace: true });
       return;
     }
-    const seen =
-      typeof window !== "undefined" &&
-      localStorage.getItem(TOUR_DONE_KEY) === "1";
+    const seen = typeof window !== "undefined" && localStorage.getItem(TOUR_DONE_KEY) === "1";
     setPhase(seen ? "auth" : "tour");
   }, [loading, splashElapsed, user, navigate]);
 
@@ -144,7 +149,12 @@ function TaglineSlider() {
 
 function AuthScreen() {
   const [busy, setBusy] = useState(false);
-  const { initializationError, retryInitialization } = useAuth();
+  const { initializationError, retryInitialization, signInAgain } = useAuth();
+
+  useEffect(() => {
+    markStartup("T10_FIRST_SCREEN", "login");
+    markInteractive("login");
+  }, []);
 
   useEffect(() => {
     const handleComplete = (event: Event) => {
@@ -164,7 +174,9 @@ function AuthScreen() {
     } catch (error) {
       setBusy(false);
       toast.error(
-        error instanceof Error ? error.message : `${provider === "apple" ? "Apple" : "Google"} sign-in failed.`,
+        error instanceof Error
+          ? error.message
+          : `${provider === "apple" ? "Apple" : "Google"} sign-in failed.`,
       );
     }
   };
@@ -192,15 +204,27 @@ function AuthScreen() {
 
       <main className="relative z-10 mx-auto -mt-8 flex w-full max-w-lg flex-col gap-4 rounded-t-3xl bg-background px-6 py-6 shadow-[var(--shadow-elegant)] sm:mb-6 sm:rounded-3xl">
         {initializationError ? (
-          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm" role="alert">
+          <div
+            className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm"
+            role="alert"
+          >
             <p>{initializationError}</p>
-            <button
-              type="button"
-              className="mt-2 font-semibold text-primary underline underline-offset-4"
-              onClick={() => void retryInitialization()}
-            >
-              Try again
-            </button>
+            <div className="mt-2 flex gap-4 font-semibold text-primary">
+              <button
+                type="button"
+                className="underline underline-offset-4"
+                onClick={() => void retryInitialization()}
+              >
+                Try again
+              </button>
+              <button
+                type="button"
+                className="underline underline-offset-4"
+                onClick={() => void signInAgain()}
+              >
+                Clear session and sign in again
+              </button>
+            </div>
           </div>
         ) : null}
 
@@ -237,7 +261,10 @@ function AuthScreen() {
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link to="/privacy" className="font-medium text-primary underline-offset-4 hover:underline">
+          <Link
+            to="/privacy"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
             Privacy Policy
           </Link>
           .
@@ -247,13 +274,7 @@ function AuthScreen() {
   );
 }
 
-function EmailAuth({
-  busy,
-  setBusy,
-}: {
-  busy: boolean;
-  setBusy: (v: boolean) => void;
-}) {
+function EmailAuth({ busy, setBusy }: { busy: boolean; setBusy: (v: boolean) => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");

@@ -11,13 +11,12 @@ export const Route = createFileRoute("/privacy")({
       {
         name: "description",
         content:
-          "How Dogeride Technologies Inc collects, uses, shares, and protects your information when you use the PupXpress (Dogeride) app.",
+          "How Dogeride Technologies Inc collects, uses, shares, and protects your information when you use PupXpress.",
       },
       { property: "og:title", content: "Privacy Policy — PupXpress" },
       {
         property: "og:description",
-        content:
-          "How we collect, use, and protect your information on PupXpress.",
+        content: "How we collect, use, and protect your information on PupXpress.",
       },
     ],
   }),
@@ -32,17 +31,14 @@ function PrivacyPage() {
       intro={
         <>
           <p>
-            This Privacy Policy explains how Dogeride Technologies Inc
-            (&ldquo;Dogeride,&rdquo; &ldquo;PupXpress,&rdquo; &ldquo;we,&rdquo;
-            &ldquo;us,&rdquo; or &ldquo;our&rdquo;) collects, uses, discloses,
-            and safeguards information about you when you use the PupXpress
-            (also marketed as Dogeride) mobile application, websites, and
-            related services (collectively, the &ldquo;Services&rdquo;).
+            This Privacy Policy explains how Dogeride Technologies Inc (&ldquo;the Company,&rdquo;
+            &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) collects, uses, discloses, and
+            safeguards information about you when you use the PupXpress mobile application,
+            websites, and related services (collectively, the &ldquo;Services&rdquo;).
           </p>
           <p>
-            By creating an account or using the Services, you acknowledge that
-            you have read and understood this Privacy Policy. If you do not
-            agree, please do not use the Services.
+            By creating an account or using the Services, you acknowledge that you have read and
+            understood this Privacy Policy. If you do not agree, please do not use the Services.
           </p>
         </>
       }
@@ -60,9 +56,7 @@ function PrivacyPage() {
             "Ratings, reviews, referral codes, and other content you submit.",
           ]}
         />
-        <p className="font-medium text-foreground">
-          Information collected automatically
-        </p>
+        <p className="font-medium text-foreground">Information collected automatically</p>
         <LegalList
           items={[
             "Precise and approximate location data (with your permission) to match riders and drivers, display nearby drivers, calculate fares, provide navigation, and enable live trip tracking.",
@@ -71,9 +65,7 @@ function PrivacyPage() {
             "Cookies and similar technologies on our websites.",
           ]}
         />
-        <p className="font-medium text-foreground">
-          Information from third parties
-        </p>
+        <p className="font-medium text-foreground">Information from third parties</p>
         <LegalList
           items={[
             "Authentication providers (e.g., Google) when you sign in with them.",
@@ -100,12 +92,14 @@ function PrivacyPage() {
       </LegalSection>
 
       <LegalSection title="3. How we share your information">
-        <p>We share information only as described below. We do not sell your personal information.</p>
+        <p>
+          We share information only as described below. We do not sell your personal information.
+        </p>
         <LegalList
           items={[
             "Between riders and drivers: limited details needed to complete a ride (e.g., first name, photo, approximate location, vehicle details, and pet care notes). Exact home addresses and contact details are masked where feasible.",
             "Service providers and processors: payment processing, cloud hosting, mapping/routing, analytics, identity verification, background checks, push-notification delivery, and customer support.",
-            "Legal and safety: to comply with applicable law, legal process, or governmental requests, and to protect the rights, property, and safety of users, the public, or Dogeride.",
+            "Legal and safety: to comply with applicable law, legal process, or governmental requests, and to protect the rights, property, and safety of users, the public, or the Company.",
             "Business transfers: in connection with a merger, acquisition, financing, or sale of assets, subject to this Privacy Policy.",
             "With your consent: for any other purpose disclosed at the time of collection.",
           ]}
@@ -114,12 +108,10 @@ function PrivacyPage() {
 
       <LegalSection title="4. Location data">
         <p>
-          The Services rely on location data to function. With your permission,
-          we collect location while you use the app and, where you enable it,
-          in the background so drivers and riders can be matched and trips can
-          be tracked in real time. You can disable location access at any time
-          through your device settings, but some features will not work without
-          it.
+          The Services rely on location data to function. With your permission, we collect location
+          while you use the app and, where you enable it, in the background so drivers and riders
+          can be matched and trips can be tracked in real time. You can disable location access at
+          any time through your device settings, but some features will not work without it.
         </p>
       </LegalSection>
 
@@ -136,57 +128,51 @@ function PrivacyPage() {
 
       <LegalSection title="6. Data retention">
         <p>
-          We retain personal information for as long as your account is active
-          and as needed to provide the Services, comply with legal, tax, and
-          accounting obligations, resolve disputes, prevent fraud, and enforce
-          our agreements. When information is no longer needed, we delete or
-          anonymize it.
+          We retain personal information for as long as your account is active and as needed to
+          provide the Services, comply with legal, tax, and accounting obligations, resolve
+          disputes, prevent fraud, and enforce our agreements. When information is no longer needed,
+          we delete or anonymize it.
         </p>
       </LegalSection>
 
       <LegalSection title="7. Security">
         <p>
-          We use administrative, technical, and physical safeguards designed to
-          protect your information, including encryption in transit, access
-          controls, and row-level security on our databases. No method of
-          transmission or storage is completely secure, and we cannot guarantee
-          absolute security.
+          We use administrative, technical, and physical safeguards designed to protect your
+          information, including encryption in transit, access controls, and row-level security on
+          our databases. No method of transmission or storage is completely secure, and we cannot
+          guarantee absolute security.
         </p>
       </LegalSection>
 
       <LegalSection title="8. Children's privacy">
         <p>
-          The Services are not directed to children under 18, and we do not
-          knowingly collect personal information from them. If you believe a
-          child has provided us with personal information, contact us and we
-          will take appropriate steps to delete it.
+          The Services are not directed to children under 18, and we do not knowingly collect
+          personal information from them. If you believe a child has provided us with personal
+          information, contact us and we will take appropriate steps to delete it.
         </p>
       </LegalSection>
 
       <LegalSection title="9. International users">
         <p>
-          We are based in the United States and process information there. If
-          you access the Services from outside the United States, you consent to
-          the transfer and processing of your information in the United States
-          and other countries that may have different data-protection laws than
-          your own.
+          We are based in the United States and process information there. If you access the
+          Services from outside the United States, you consent to the transfer and processing of
+          your information in the United States and other countries that may have different
+          data-protection laws than your own.
         </p>
       </LegalSection>
 
       <LegalSection title="10. Changes to this policy">
         <p>
-          We may update this Privacy Policy from time to time. We will post the
-          updated version with a new effective date and, where appropriate,
-          provide additional notice. Your continued use of the Services after an
-          update constitutes acceptance of the revised policy.
+          We may update this Privacy Policy from time to time. We will post the updated version with
+          a new effective date and, where appropriate, provide additional notice. Your continued use
+          of the Services after an update constitutes acceptance of the revised policy.
         </p>
       </LegalSection>
 
       <LegalSection title="11. Contact us">
         <p>
-          If you have questions or requests regarding this Privacy Policy or
-          your information, contact us at support@pupxpress.com or by mail at the
-          address below.
+          If you have questions or requests regarding this Privacy Policy or your information,
+          contact us at support@pupxpress.com or by mail at the address below.
         </p>
       </LegalSection>
     </LegalPage>

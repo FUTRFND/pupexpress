@@ -25,7 +25,7 @@ export function getStripe(): Stripe {
   }
   if (!cachedStripe) {
     cachedStripe = new Stripe(key, {
-      apiVersion: "2026-05-27.dahlia",
+      apiVersion: "2026-07-29.dahlia",
       httpClient: Stripe.createFetchHttpClient(),
     });
   }
@@ -40,9 +40,7 @@ export function getStripeCryptoProvider() {
 export function getWebhookSecret(): string {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) {
-    throw new Error(
-      "Stripe webhook secret missing. Set the STRIPE_WEBHOOK_SECRET secret.",
-    );
+    throw new Error("Stripe webhook secret missing. Set the STRIPE_WEBHOOK_SECRET secret.");
   }
   return secret;
 }
@@ -102,9 +100,7 @@ export interface FeeBreakdown {
  */
 export function computeFees(rideTotalInput?: number | null): FeeBreakdown {
   const cfg = getFeeConfig();
-  const rideTotal = round2(
-    rideTotalInput && rideTotalInput > 0 ? rideTotalInput : cfg.baseFare,
-  );
+  const rideTotal = round2(rideTotalInput && rideTotalInput > 0 ? rideTotalInput : cfg.baseFare);
 
   let platformFee = rideTotal * cfg.percent + cfg.flatFee;
   if (platformFee < cfg.minFee) platformFee = cfg.minFee;
