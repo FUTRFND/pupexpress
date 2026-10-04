@@ -9,50 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedCommunityGuidelinesRouteImport } from './routes/_authenticated/community-guidelines'
-import { Route as AuthenticatedEarningsRouteImport } from './routes/_authenticated/earnings'
-import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
-import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
-import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/_authenticated/harassment-prevention'
-import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
-import { Route as AuthenticatedHowToUseRouteImport } from './routes/_authenticated/how-to-use'
-import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
-import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedPetCareGuidelinesRouteImport } from './routes/_authenticated/pet-care-guidelines'
-import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedSafetyRouteImport } from './routes/_authenticated/safety'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTripsRouteImport } from './routes/_authenticated/trips'
-import { Route as AuthenticatedDriverVerifyRouteImport } from './routes/_authenticated/driver.verify'
+import { Route as AuthenticatedSafetyRouteImport } from './routes/_authenticated/safety'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
+import { Route as AuthenticatedPetCareGuidelinesRouteImport } from './routes/_authenticated/pet-care-guidelines'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
+import { Route as AuthenticatedHowToUseRouteImport } from './routes/_authenticated/how-to-use'
+import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedHarassmentPreventionRouteImport } from './routes/_authenticated/harassment-prevention'
+import { Route as AuthenticatedFaqRouteImport } from './routes/_authenticated/faq'
+import { Route as AuthenticatedEmergencyRouteImport } from './routes/_authenticated/emergency'
+import { Route as AuthenticatedEarningsRouteImport } from './routes/_authenticated/earnings'
+import { Route as AuthenticatedCommunityGuidelinesRouteImport } from './routes/_authenticated/community-guidelines'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedReferralsIndexRouteImport } from './routes/_authenticated/referrals.index'
-import { Route as AuthenticatedReferralsLeaderboardRouteImport } from './routes/_authenticated/referrals.leaderboard'
-import { Route as AuthenticatedRidesRideIdRouteImport } from './routes/_authenticated/rides.$rideId'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as AuthenticatedRidesRideIdRouteImport } from './routes/_authenticated/rides.$rideId'
+import { Route as AuthenticatedReferralsLeaderboardRouteImport } from './routes/_authenticated/referrals.leaderboard'
+import { Route as AuthenticatedDriverVerifyRouteImport } from './routes/_authenticated/driver.verify'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -60,35 +46,70 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedTripsRoute = AuthenticatedTripsRouteImport.update({
+  id: '/trips',
+  path: '/trips',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCommunityGuidelinesRoute =
-  AuthenticatedCommunityGuidelinesRouteImport.update({
-    id: '/community-guidelines',
-    path: '/community-guidelines',
+const AuthenticatedSafetyRoute = AuthenticatedSafetyRouteImport.update({
+  id: '/safety',
+  path: '/safety',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPetCareGuidelinesRoute =
+  AuthenticatedPetCareGuidelinesRouteImport.update({
+    id: '/pet-care-guidelines',
+    path: '/pet-care-guidelines',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedEarningsRoute = AuthenticatedEarningsRouteImport.update({
-  id: '/earnings',
-  path: '/earnings',
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedEmergencyRoute = AuthenticatedEmergencyRouteImport.update({
-  id: '/emergency',
-  path: '/emergency',
+const AuthenticatedHowToUseRoute = AuthenticatedHowToUseRouteImport.update({
+  id: '/how-to-use',
+  path: '/how-to-use',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedFaqRoute = AuthenticatedFaqRouteImport.update({
-  id: '/faq',
-  path: '/faq',
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHarassmentPreventionRoute =
@@ -97,63 +118,47 @@ const AuthenticatedHarassmentPreventionRoute =
     path: '/harassment-prevention',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
-  id: '/home',
-  path: '/home',
+const AuthenticatedFaqRoute = AuthenticatedFaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedHowToUseRoute = AuthenticatedHowToUseRouteImport.update({
-  id: '/how-to-use',
-  path: '/how-to-use',
+const AuthenticatedEmergencyRoute = AuthenticatedEmergencyRouteImport.update({
+  id: '/emergency',
+  path: '/emergency',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
-  id: '/messages',
-  path: '/messages',
+const AuthenticatedEarningsRoute = AuthenticatedEarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedNotificationsRoute =
-  AuthenticatedNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
+const AuthenticatedCommunityGuidelinesRoute =
+  AuthenticatedCommunityGuidelinesRouteImport.update({
+    id: '/community-guidelines',
+    path: '/community-guidelines',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPetCareGuidelinesRoute =
-  AuthenticatedPetCareGuidelinesRouteImport.update({
-    id: '/pet-care-guidelines',
-    path: '/pet-care-guidelines',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSafetyRoute = AuthenticatedSafetyRouteImport.update({
-  id: '/safety',
-  path: '/safety',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedTripsRoute = AuthenticatedTripsRouteImport.update({
-  id: '/trips',
-  path: '/trips',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDriverVerifyRoute =
-  AuthenticatedDriverVerifyRouteImport.update({
-    id: '/driver/verify',
-    path: '/driver/verify',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedReferralsIndexRoute =
   AuthenticatedReferralsIndexRouteImport.update({
     id: '/referrals/',
     path: '/referrals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
+  id: '/api/public/stripe-webhook',
+  path: '/api/public/stripe-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRidesRideIdRoute =
+  AuthenticatedRidesRideIdRouteImport.update({
+    id: '/rides/$rideId',
+    path: '/rides/$rideId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedReferralsLeaderboardRoute =
@@ -162,17 +167,12 @@ const AuthenticatedReferralsLeaderboardRoute =
     path: '/referrals/leaderboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedRidesRideIdRoute =
-  AuthenticatedRidesRideIdRouteImport.update({
-    id: '/rides/$rideId',
-    path: '/rides/$rideId',
+const AuthenticatedDriverVerifyRoute =
+  AuthenticatedDriverVerifyRouteImport.update({
+    id: '/driver/verify',
+    path: '/driver/verify',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
-  id: '/api/public/stripe-webhook',
-  path: '/api/public/stripe-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -354,32 +354,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -389,102 +368,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/community-guidelines': {
-      id: '/_authenticated/community-guidelines'
-      path: '/community-guidelines'
-      fullPath: '/community-guidelines'
-      preLoaderRoute: typeof AuthenticatedCommunityGuidelinesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/earnings': {
-      id: '/_authenticated/earnings'
-      path: '/earnings'
-      fullPath: '/earnings'
-      preLoaderRoute: typeof AuthenticatedEarningsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/emergency': {
-      id: '/_authenticated/emergency'
-      path: '/emergency'
-      fullPath: '/emergency'
-      preLoaderRoute: typeof AuthenticatedEmergencyRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/faq': {
-      id: '/_authenticated/faq'
-      path: '/faq'
-      fullPath: '/faq'
-      preLoaderRoute: typeof AuthenticatedFaqRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/harassment-prevention': {
-      id: '/_authenticated/harassment-prevention'
-      path: '/harassment-prevention'
-      fullPath: '/harassment-prevention'
-      preLoaderRoute: typeof AuthenticatedHarassmentPreventionRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/home': {
-      id: '/_authenticated/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof AuthenticatedHomeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/how-to-use': {
-      id: '/_authenticated/how-to-use'
-      path: '/how-to-use'
-      fullPath: '/how-to-use'
-      preLoaderRoute: typeof AuthenticatedHowToUseRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/messages': {
-      id: '/_authenticated/messages'
-      path: '/messages'
-      fullPath: '/messages'
-      preLoaderRoute: typeof AuthenticatedMessagesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/notifications': {
-      id: '/_authenticated/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/pet-care-guidelines': {
-      id: '/_authenticated/pet-care-guidelines'
-      path: '/pet-care-guidelines'
-      fullPath: '/pet-care-guidelines'
-      preLoaderRoute: typeof AuthenticatedPetCareGuidelinesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/pricing': {
-      id: '/_authenticated/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof AuthenticatedPricingRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/profile': {
-      id: '/_authenticated/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+    '/_authenticated/trips': {
+      id: '/_authenticated/trips'
+      path: '/trips'
+      fullPath: '/trips'
+      preLoaderRoute: typeof AuthenticatedTripsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/safety': {
@@ -494,18 +410,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSafetyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/trips': {
-      id: '/_authenticated/trips'
-      path: '/trips'
-      fullPath: '/trips'
-      preLoaderRoute: typeof AuthenticatedTripsRouteImport
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/driver/verify': {
-      id: '/_authenticated/driver/verify'
-      path: '/driver/verify'
-      fullPath: '/driver/verify'
-      preLoaderRoute: typeof AuthenticatedDriverVerifyRouteImport
+    '/_authenticated/pricing': {
+      id: '/_authenticated/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof AuthenticatedPricingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pet-care-guidelines': {
+      id: '/_authenticated/pet-care-guidelines'
+      path: '/pet-care-guidelines'
+      fullPath: '/pet-care-guidelines'
+      preLoaderRoute: typeof AuthenticatedPetCareGuidelinesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/messages': {
+      id: '/_authenticated/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof AuthenticatedMessagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/how-to-use': {
+      id: '/_authenticated/how-to-use'
+      path: '/how-to-use'
+      fullPath: '/how-to-use'
+      preLoaderRoute: typeof AuthenticatedHowToUseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/harassment-prevention': {
+      id: '/_authenticated/harassment-prevention'
+      path: '/harassment-prevention'
+      fullPath: '/harassment-prevention'
+      preLoaderRoute: typeof AuthenticatedHarassmentPreventionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/faq': {
+      id: '/_authenticated/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof AuthenticatedFaqRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/emergency': {
+      id: '/_authenticated/emergency'
+      path: '/emergency'
+      fullPath: '/emergency'
+      preLoaderRoute: typeof AuthenticatedEmergencyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/earnings': {
+      id: '/_authenticated/earnings'
+      path: '/earnings'
+      fullPath: '/earnings'
+      preLoaderRoute: typeof AuthenticatedEarningsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/community-guidelines': {
+      id: '/_authenticated/community-guidelines'
+      path: '/community-guidelines'
+      fullPath: '/community-guidelines'
+      preLoaderRoute: typeof AuthenticatedCommunityGuidelinesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/referrals/': {
@@ -515,12 +508,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReferralsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/referrals/leaderboard': {
-      id: '/_authenticated/referrals/leaderboard'
-      path: '/referrals/leaderboard'
-      fullPath: '/referrals/leaderboard'
-      preLoaderRoute: typeof AuthenticatedReferralsLeaderboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/api/public/stripe-webhook': {
+      id: '/api/public/stripe-webhook'
+      path: '/api/public/stripe-webhook'
+      fullPath: '/api/public/stripe-webhook'
+      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/rides/$rideId': {
       id: '/_authenticated/rides/$rideId'
@@ -529,12 +522,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRidesRideIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/stripe-webhook': {
-      id: '/api/public/stripe-webhook'
-      path: '/api/public/stripe-webhook'
-      fullPath: '/api/public/stripe-webhook'
-      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/referrals/leaderboard': {
+      id: '/_authenticated/referrals/leaderboard'
+      path: '/referrals/leaderboard'
+      fullPath: '/referrals/leaderboard'
+      preLoaderRoute: typeof AuthenticatedReferralsLeaderboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/driver/verify': {
+      id: '/_authenticated/driver/verify'
+      path: '/driver/verify'
+      fullPath: '/driver/verify'
+      preLoaderRoute: typeof AuthenticatedDriverVerifyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
