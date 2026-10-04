@@ -25,7 +25,7 @@ export function getStripe(): Stripe {
   }
   if (!cachedStripe) {
     cachedStripe = new Stripe(key, {
-      apiVersion: "2026-07-29.dahlia",
+      apiVersion: "2026-05-27.dahlia",
       httpClient: Stripe.createFetchHttpClient(),
     });
   }
