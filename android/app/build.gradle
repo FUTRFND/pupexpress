@@ -1,5 +1,25 @@
 apply plugin: 'com.android.application'
 
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
+def requiredSigningProperties = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+def signingEnvironment = [
+    storeFile: System.getenv('PUPXPRESS_STORE_FILE'),
+    storePassword: System.getenv('PUPXPRESS_STORE_PASSWORD'),
+    keyAlias: System.getenv('PUPXPRESS_KEY_ALIAS'),
+    keyPassword: System.getenv('PUPXPRESS_KEY_PASSWORD'),
+]
+def signingValues = requiredSigningProperties.collectEntries { propertyName ->
+    [(propertyName): keystoreProperties.getProperty(propertyName) ?: signingEnvironment[propertyName]]
+}
+def missingSigningProperties = requiredSigningProperties.findAll {
+    !signingValues[it]?.trim()
+}
+
 android {
     namespace = "com.pupxpress.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,11 +36,39 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (missingSigningProperties.isEmpty()) {
+                storeFile file(signingValues.storeFile)
+                storePassword signingValues.storePassword
+                keyAlias signingValues.keyAlias
+                keyPassword signingValues.keyPassword
+                enableV1Signing true
+                enableV2Signing true
+            }
+        }
+    }
     buildTypes {
         release {
+            if (missingSigningProperties.isEmpty()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    def releaseRequested = graph.allTasks.any {
+        it.project == project && it.name in ['bundleRelease', 'assembleRelease', 'packageReleaseBundle']
+    }
+    if (releaseRequested && !missingSigningProperties.isEmpty()) {
+        throw new GradleException(
+            "Release signing is not configured. Add android/keystore.properties or set the " +
+            "PUPXPRESS_STORE_FILE, PUPXPRESS_STORE_PASSWORD, PUPXPRESS_KEY_ALIAS, and " +
+            "PUPXPRESS_KEY_PASSWORD environment variables."
+        )
     }
 }
 
